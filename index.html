@@ -123,7 +123,7 @@
             opacity: 0;
         }
         .menu-sub.show {
-            height: 180px;
+            height: 220px;
             opacity: 1;
         }
         .time-sub {
@@ -340,6 +340,84 @@
             background: #e9ecef;
             transform: translateX(3px);
         }
+        /* 搜索记录样式 */
+        .search-record {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+            padding: 10px 0;
+            z-index: 999;
+            opacity: 0;
+            transform: translateY(-10px) scale(0.95);
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .search-record.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        .record-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .record-title {
+            font-size: 14px;
+            color: #999;
+        }
+        .clear-all {
+            font-size: 14px;
+            color: #165DFF;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+        }
+        .record-list {
+            padding: 8px 0;
+        }
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            font-size: 15px;
+            color: #333;
+            cursor: pointer;
+        }
+        .record-item:hover {
+            background: #f5f7fa;
+        }
+        .record-item i {
+            color: #999;
+            font-size: 14px;
+            display: none;
+        }
+        .record-item:hover i {
+            display: block;
+        }
+        .record-empty {
+            padding: 20px;
+            text-align: center;
+            font-size: 15px;
+            color: #999;
+        }
+        /* 滚动条样式 */
+        .search-record::-webkit-scrollbar {
+            width: 4px;
+        }
+        .search-record::-webkit-scrollbar-thumb {
+            background: #e0e0e0;
+            border-radius: 2px;
+        }
         .shortcut-box {
             display: flex;
             gap: 30px;
@@ -497,13 +575,16 @@
                 transform: scale(1) translateY(0);
             }
         }
+        /* 深色模式适配 */
         body.dark .title-time,
         body.dark .menu-btn,
         body.dark .menu-main,
         body.dark .sub-item,
         body.dark .search-input,
         body.dark .engine-toggle,
-        body.dark .engine-item {
+        body.dark .engine-item,
+        body.dark .record-item,
+        body.dark .clear-all {
             color: #f5f5f5;
         }
         body.dark .menu-btn {
@@ -603,6 +684,31 @@
         body.dark .about-close:active {
             background: #525270;
         }
+        /* 搜索记录深色模式 */
+        body.dark .search-record {
+            background: #2d2d3f;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+        }
+        body.dark .record-header {
+            border-bottom-color: #454560;
+        }
+        body.dark .record-title,
+        body.dark .record-empty {
+            color: #b0b0b8;
+        }
+        body.dark .record-item:hover {
+            background: #383850;
+        }
+        body.dark .record-item i {
+            color: #b0b0b8;
+        }
+        body.dark .clear-all {
+            color: #4080ff;
+        }
+        body.dark .search-record::-webkit-scrollbar-thumb {
+            background: #454560;
+        }
+
         @media (prefers-color-scheme: dark) {
             body:not(.light):not(.dark) {
                 background: #1a1a1d;
@@ -613,7 +719,9 @@
             body:not(.light):not(.dark) .sub-item,
             body:not(.light):not(.dark) .search-input,
             body:not(.light):not(.dark) .engine-toggle,
-            body:not(.light):not(.dark) .engine-item {
+            body:not(.light):not(.dark) .engine-item,
+            body:not(.light):not(.dark) .record-item,
+            body:not(.light):not(.dark) .clear-all {
                 color: #f5f5f5;
             }
             body:not(.light):not(.dark) .menu-btn {
@@ -653,6 +761,21 @@
             body:not(.light):not(.dark) .about-close {
                 background: #383850;
                 color: #f5f5f5;
+            }
+            /* 搜索记录跟随系统深色 */
+            body:not(.light):not(.dark) .search-record {
+                background: #2d2d3f;
+                box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+            }
+            body:not(.light):not(.dark) .record-header {
+                border-bottom-color: #454560;
+            }
+            body:not(.light):not(.dark) .record-title,
+            body:not(.light):not(.dark) .record-empty {
+                color: #b0b0b8;
+            }
+            body:not(.light):not(.dark) .record-item:hover {
+                background: #383850;
             }
         }
         @media (max-width: 400px) {
@@ -752,6 +875,13 @@
                     <div class="switch-hit-area" data-target="timeSwitch"></div>
                 </div>
             </div>
+            <div class="sub-item" id="recordToggle">
+                搜索记录
+                <div class="switch-container">
+                    <div class="switch" id="recordSwitch"></div>
+                    <div class="switch-hit-area" data-target="recordSwitch"></div>
+                </div>
+            </div>
         </div>
         <div class="time-sub" id="timeSub">
             <div class="sub-item" id="hour12Toggle">
@@ -774,9 +904,9 @@
 
     <div class="about-mask" id="aboutMask">
         <div class="about-box">
-            <div class="about-version">版本号：v1.0.0</div>
+            <div class="about-version">版本号：v1.0.1</div>
             <p class="about-text">作者：弘九honjiu | 牛奶</p>
-            <p class="about-copyright">© stariver26.github.io</p>
+            <p class="about-copyright">© honjiu.github.io</p>
             <button class="about-close" id="aboutClose">关闭</button>
         </div>
     </div>
@@ -794,6 +924,16 @@
             <button class="engine-item" data-engine="google">Google</button>
             <button class="engine-item" data-engine="360">360</button>
         </div>
+        <!-- 搜索记录面板 -->
+        <div class="search-record" id="searchRecord">
+            <div class="record-header">
+                <span class="record-title">搜索记录</span>
+                <button class="clear-all" id="clearAll">清空全部</button>
+            </div>
+            <div class="record-list" id="recordList">
+                <div class="record-empty">暂无搜索记录</div>
+            </div>
+        </div>
     </div>
 
     <div class="shortcut-box">
@@ -809,13 +949,15 @@
             aboutBtn, aboutMask, aboutClose, exploreTitle, timeDisplay,
             engineToggle, enginePanel, searchInput, themeSwitch,
             titleSwitch, timeSwitch, hour12Switch, secondSwitch,
-            themeToggle, titleToggle, timeToggle, hour12Toggle, secondToggle
+            themeToggle, titleToggle, timeToggle, hour12Toggle, secondToggle,
+            recordToggle, recordSwitch, searchRecord, recordList, clearAll
         ] = [
             el('menuBtn'), el('menuPopup'), el('settingBtn'), el('settingSub'), el('timeSub'),
             el('aboutBtn'), el('aboutMask'), el('aboutClose'), el('exploreTitle'), el('timeDisplay'),
             el('engineToggle'), el('enginePanel'), el('searchInput'), el('themeSwitch'),
             el('titleSwitch'), el('timeSwitch'), el('hour12Switch'), el('secondSwitch'),
-            el('themeToggle'), el('titleToggle'), el('timeToggle'), el('hour12Toggle'), el('secondToggle')
+            el('themeToggle'), el('titleToggle'), el('timeToggle'), el('hour12Toggle'), el('secondToggle'),
+            el('recordToggle'), el('recordSwitch'), el('searchRecord'), el('recordList'), el('clearAll')
         ];
         const engineItems = document.querySelectorAll('.engine-item');
         const switchHitAreas = document.querySelectorAll('.switch-hit-area');
@@ -829,6 +971,9 @@
         };
         const engineName = {baidu: '百度', bing: '必应', sogou: '搜狗', google: 'Google', 360: '360'};
         let currentEngine = localStorage.getItem('lastSearchEngine') || 'bing';
+        // 搜索记录配置
+        const RECORD_KEY = 'searchHistoryList';
+        const MAX_RECORD = 20; // 最大记录数
 
         const init = () => {
             const savedMode = localStorage.getItem('colorMode') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -839,11 +984,14 @@
             exploreTitle.classList.toggle('hidden', !isTitleShow);
             titleSwitch.classList.toggle('checked', isTitleShow);
 
-            engineToggle.innerHTML = `${engineName[currentEngine]} <span style="font-size:12px;">▼</span>`;
-
             const isTimeShow = localStorage.getItem('isTimeShow') === 'true';
             const isHour12 = localStorage.getItem('isHour12') === 'true';
             const isShowSecond = localStorage.getItem('isShowSecond') === 'true';
+            // 搜索记录开关初始化
+            const isSaveRecord = localStorage.getItem('isSaveRecord') !== 'false';
+            recordSwitch.classList.toggle('checked', isSaveRecord);
+
+            engineToggle.innerHTML = `${engineName[currentEngine]} <span style="font-size:12px;">▼</span>`;
 
             timeSwitch.classList.toggle('checked', isTimeShow);
             hour12Switch.classList.toggle('checked', isHour12);
@@ -855,11 +1003,16 @@
             timeSub.classList.toggle('show', isTimeShow);
 
             isTimeShow && renderTime();
+            // 初始化搜索记录
+            renderRecordList();
+            // 绑定搜索记录相关事件
+            bindRecordEvent();
         };
 
         menuBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             menuPopup.classList.toggle('show');
+            searchRecord.classList.remove('show');
         });
 
         settingBtn.addEventListener('click', (e) => {
@@ -867,20 +1020,24 @@
             settingSub.classList.toggle('show');
         });
 
-        document.addEventListener('click', () => {
+        document.addEventListener('click', (e) => {
+            // 点击非搜索框区域关闭记录面板
+            if (!searchInput.contains(e.target) && !searchRecord.contains(e.target)) {
+                searchRecord.classList.remove('show');
+            }
             menuPopup.classList.remove('show');
             settingSub.classList.remove('show');
             timeSub.classList.remove('show');
             enginePanel.classList.remove('show');
         });
 
-        [menuPopup, enginePanel, settingSub, timeSub].forEach(item => {
+        [menuPopup, enginePanel, settingSub, timeSub, searchRecord].forEach(item => {
             item.addEventListener('click', (e) => e.stopPropagation());
         });
 
         aboutBtn.addEventListener('click', () => {
             aboutMask.classList.add('show');
-            [menuPopup, settingSub, timeSub].forEach(item => item.classList.remove('show'));
+            [menuPopup, settingSub, timeSub, searchRecord].forEach(item => item.classList.remove('show'));
         });
 
         aboutClose.addEventListener('click', () => aboutMask.classList.remove('show'));
@@ -951,6 +1108,15 @@
         secondToggle.addEventListener('click', toggleSecond);
         secondSwitch.addEventListener('click', toggleSecond);
 
+        // 搜索记录开关切换
+        const toggleRecord = () => {
+            const isSave = !recordSwitch.classList.contains('checked');
+            recordSwitch.classList.toggle('checked', isSave);
+            localStorage.setItem('isSaveRecord', isSave);
+        };
+        recordToggle.addEventListener('click', toggleRecord);
+        recordSwitch.addEventListener('click', toggleRecord);
+
         switchHitAreas.forEach(area => {
             area.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -965,6 +1131,7 @@
         engineToggle.addEventListener('click', (e) => {
             e.stopPropagation();
             enginePanel.classList.toggle('show');
+            searchRecord.classList.remove('show');
         });
 
         engineItems.forEach(item => {
@@ -976,13 +1143,22 @@
             });
         });
 
+        // 搜索核心方法
+        const doSearch = (content) => {
+            if (!content.trim()) return;
+            // 保存搜索记录
+            saveSearchRecord(content);
+            // 跳转搜索
+            const isUrl = /^(https?:\/\/)|(\.\w{2,})$/.test(content);
+            const jumpUrl = isUrl ? (content.startsWith('http') ? content : `https://${content}`) : engineMap[currentEngine] + encodeURIComponent(content);
+            window.open(jumpUrl, '_blank');
+        };
+
         searchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && searchInput.value.trim()) {
-                const content = searchInput.value.trim();
-                const isUrl = /^(https?:\/\/)|(\.\w{2,})$/.test(content);
-                const jumpUrl = isUrl ? (content.startsWith('http') ? content : `https://${content}`) : engineMap[currentEngine] + encodeURIComponent(content);
-                window.open(jumpUrl, '_blank');
+                doSearch(searchInput.value.trim());
                 searchInput.value = '';
+                searchRecord.classList.remove('show');
             }
         });
 
@@ -1006,7 +1182,90 @@
             window.timeTimer = setInterval(updateTime, localStorage.getItem('isShowSecond') === 'true' ? 1000 : 60000);
         };
 
+        // ---------------------- 搜索记录核心功能 ----------------------
+        // 保存搜索记录
+        const saveSearchRecord = (content) => {
+            const isSave = localStorage.getItem('isSaveRecord') !== 'false';
+            if (!isSave) return;
+            let history = JSON.parse(localStorage.getItem(RECORD_KEY) || '[]');
+            // 去重：移除已存在的相同记录
+            history = history.filter(item => item !== content);
+            // 新增到头部
+            history.unshift(content);
+            // 限制最大条数
+            if (history.length > MAX_RECORD) history.pop();
+            // 保存到本地
+            localStorage.setItem(RECORD_KEY, JSON.stringify(history));
+            // 重新渲染
+            renderRecordList();
+        };
+
+        // 渲染搜索记录列表
+        const renderRecordList = () => {
+            let history = JSON.parse(localStorage.getItem(RECORD_KEY) || '[]');
+            if (history.length === 0) {
+                recordList.innerHTML = '<div class="record-empty">暂无搜索记录</div>';
+                return;
+            }
+            // 生成记录项
+            const html = history.map(item => `
+                <div class="record-item" data-value="${item}">
+                    <span>${item}</span>
+                    <i class="fas fa-times delete-record"></i>
+                </div>
+            `).join('');
+            recordList.innerHTML = html;
+        };
+
+        // 清空全部记录
+        const clearAllRecord = () => {
+            if (confirm('确定要清空所有搜索记录吗？')) {
+                localStorage.removeItem(RECORD_KEY);
+                renderRecordList();
+            }
+        };
+
+        // 删除单条记录
+        const deleteSingleRecord = (e) => {
+            const target = e.target;
+            if (target.classList.contains('delete-record')) {
+                e.stopPropagation();
+                const item = target.parentElement;
+                const value = item.dataset.value;
+                let history = JSON.parse(localStorage.getItem(RECORD_KEY) || '[]');
+                history = history.filter(item => item !== value);
+                localStorage.setItem(RECORD_KEY, JSON.stringify(history));
+                renderRecordList();
+            }
+        };
+
+        // 点击记录项搜索
+        const clickRecordSearch = (e) => {
+            const target = e.target;
+            if (target.classList.contains('record-item')) {
+                const value = target.dataset.value;
+                searchInput.value = value;
+                doSearch(value);
+                searchRecord.classList.remove('show');
+            }
+        };
+
+        // 绑定搜索记录事件
+        const bindRecordEvent = () => {
+            // 聚焦搜索框显示记录
+            searchInput.addEventListener('focus', () => {
+                const hasRecord = JSON.parse(localStorage.getItem(RECORD_KEY) || '[]').length > 0;
+                if (hasRecord) searchRecord.classList.add('show');
+            });
+            // 清空全部
+            clearAll.addEventListener('click', clearAllRecord);
+            // 删除单条
+            recordList.addEventListener('click', deleteSingleRecord);
+            // 点击记录搜索
+            recordList.addEventListener('click', clickRecordSearch);
+        };
+
         init();
     </script>
 </body>
-</html>+
+</html>
