@@ -424,19 +424,19 @@
         function setDifficulty(level) {
             switch(level) {
                 case 'easy': 
+                    aiSpeed = 2; 
+                    ballSpeedRate = 0.5; 
+                    break;
+                case 'normal': 
                     aiSpeed = 4; 
                     ballSpeedRate = 1; 
                     break;
-                case 'normal': 
-                    aiSpeed = 6; 
-                    ballSpeedRate = 1; 
-                    break;
                 case 'hard': 
-                    aiSpeed = 9; 
+                    aiSpeed = 5; 
                     ballSpeedRate = 1; 
                     break;
                 case 'hell': 
-                    aiSpeed = 9; 
+                    aiSpeed = 7; 
                     ballSpeedRate = 1.5; 
                     break;
             }
@@ -701,10 +701,111 @@
         openSettings.addEventListener('click', () => {
             settingsModal.style.display = 'flex';
         });
-        closeSettings.addEventListener('click', () => {
+        // 基础按钮事件
+startAI.addEventListener('click', () => {
+    homeScreen.style.display = 'none';
+    gameScreen.style.display = 'flex';
+    gameRunning = true;
+    resetBall(); // 开始新局，重置球位置
+});
+backBtn.addEventListener('click', () => {
+    gameScreen.style.display = 'none';
+    homeScreen.style.display = 'flex';
+    gameRunning = false;
+    ballMoving = false;
+    resultModal.style.display = 'none'; // 关闭胜负提示
+    resetGame(); // 手动返回仅重置比分，保留开发者得分配置
+});
+openSettings.addEventListener('click', () => {
+    settingsModal.style.display = 'flex';
+});
+closeSettings.addEventListener('click', () => {
+    // 检查是否选择了地狱难度
+    if (difficultySelect.value === 'hell') {
+        // 创建自定义确认弹窗
+        const hellConfirm = document.createElement('div');
+        hellConfirm.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        `;
+        
+        const hellBox = document.createElement('div');
+        hellBox.style.cssText = `
+            background: #2d3436;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 400px;
+            border: 2px solid #ef4444;
+        `;
+        
+        hellBox.innerHTML = `
+            <div style="color: #ef4444; font-size: 32px; margin-bottom: 20px;">⚠️ 警告 ⚠️</div>
+            <div style="color: #fff; font-size: 18px; margin-bottom: 30px; line-height: 1.6;">
+                地狱难度将在困难AI反应加快1.3倍的基础上<br>
+                将球的速度加快1.5倍，目前无一人获胜，<br>
+                <span style="color: #ef4444; font-size: 20px; font-weight: bold;">你确定要这么做吗？</span>
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button id="hellConfirm" style="
+                    padding: 12px 25px;
+                    background: #ef4444;
+                    color: #fff;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                ">是，我是大佬</button>
+                <button id="hellCancel" style="
+                    padding: 12px 25px;
+                    background: #2e7d32;
+                    color: #fff;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                ">不，我怂了</button>
+            </div>
+        `;
+        
+        hellConfirm.appendChild(hellBox);
+        document.body.appendChild(hellConfirm);
+        
+        // 确认按钮事件
+        document.getElementById('hellConfirm').addEventListener('click', () => {
             settingsModal.style.display = 'none';
-            setDifficulty(difficultySelect.value);
+            setDifficulty('hell');
+            document.body.removeChild(hellConfirm);
         });
+        
+        // 取消按钮事件
+        document.getElementById('hellCancel').addEventListener('click', () => {
+            // 恢复为之前的选择（默认为简单）
+            difficultySelect.value = 'easy';
+            setDifficulty('easy');
+            document.body.removeChild(hellConfirm);
+        });
+    } else {
+        settingsModal.style.display = 'none';
+        setDifficulty(difficultySelect.value);
+    }
+});
+
+// 初始化
+setDifficulty(difficultySelect.value);
+gameLoop();
 
         // 初始化
         setDifficulty(difficultySelect.value);
