@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GameBox</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  scroll-behavior: smooth;
+}
+/* 修复：调整主题变量顺序，默认在前，覆盖在后，符合CSS规范 */
+:root {
+  --bg: #121212;
+  --card: #1e1e1e;
+  --text: #fff;
+  --subtext: #aaa;
+  --header: #1e1e1e;
+  --search: #2a2a2a;
+}
+:root.light {
+  --bg: #f5f5f5;
+  --card: #ffffff;
+  --text: #222;
+  --subtext: #666;
+  --header: #ffffff;
+  --search: #eeeeee;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.header {
+  position: sticky;
+  top: 0;
+  background: var(--header);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  z-index: 99;
+  transition: all 0.3s ease;
+}
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #42b983;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.logo:hover {
+  transform: scale(1.05);
+}
+.search {
+  flex: 1;
+  max-width: 600px;
+  margin: 0 20px;
+}
+.search input {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 50px;
+  border: none;
+  outline: none;
+  background: var(--search);
+  color: var(--text);
+  font-size: 15px;
+  transition: all 0.2s ease;
+}
+.search input:focus {
+  background: #333;
+  transform: scale(1.02);
+}
+.menu-btn {
+  width: 36px;
+  height: 36px;
+  background: var(--search);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  border: none;
+  color: var(--text);
+  transition: all 0.2s ease;
+}
+.menu-btn:hover {
+  transform: rotate(90deg);
+  background: #42b983;
+  color: #000;
+}
+.menu-popup {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  width: 200px;
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+  padding: 10px 0;
+  display: none;
+  z-index: 100;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.25s ease;
+}
+.menu-popup.show {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+.menu-item {
+  padding: 12px 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.menu-item:hover {
+  background: rgba(66, 185, 131, 0.2);
+  padding-left: 22px;
+}
+/* 弹窗动画 */
+.modal {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.modal.show {
+  display: flex;
+  opacity: 1;
+}
+.modal-box {
+  background: var(--card);
+  width: 90%;
+  max-width: 380px;
+  border-radius: 14px;
+  padding: 24px;
+  transform: scale(0.8);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+}
+.modal.show .modal-box {
+  transform: scale(1);
+  opacity: 1;
+}
+.modal-title {
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+.modal-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+.switch {
+  width: 40px;
+  height: 22px;
+  background: #666;
+  border-radius: 20px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.switch::after {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  top: 2px; left: 2px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.switch.on {
+  background: #42b983;
+}
+.switch.on::after {
+  left: 20px;
+}
+.dev-btn {
+  width: 100%;
+  padding: 10px;
+  background: #42b983;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.2s ease;
+}
+.dev-btn:hover {
+  transform: scale(1.03);
+  background: #36a875;
+}
+.close {
+  margin-top: 20px;
+  padding: 10px;
+  text-align: center;
+  background: #42b983;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.close:hover {
+  transform: scale(1.03);
+}
+.container {
+  max-width: 1400px;
+  margin: 20px auto;
+  padding: 0 20px;
+  flex: 1;
+  width: 100%;
+}
+.section-title {
+  font-size: 20px;
+  margin: 30px 0 15px;
+  animation: fadeIn 0.6s ease;
+}
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+.game-card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 20px 12px;
+  text-align: center;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  animation: cardFadeIn 0.5s forwards;
+}
+/* 开发中卡片鼠标样式改为默认，取消点击反馈 */
+.game-card.wait {
+  cursor: default;
+}
+.game-card.wait:hover {
+  transform: none;
+  box-shadow: none;
+}
+@keyframes cardFadeIn {
+  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(10px); }
+}
+.game-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+}
+.game-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.game-desc {
+  font-size: 12px;
+  color: var(--subtext);
+}
+.wait {
+  color: #888;
+}
+/* 无搜索结果提示 */
+.no-result {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 0;
+  color: #888;
+  font-size: 16px;
+  animation: fadeIn 0.5s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.footer {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+  font-size: 13px;
+  animation: fadeIn 0.8s ease;
+  margin-top: auto;
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <!-- 点击 logo 刷新回到首页 -->
+  <div class="logo" id="goHome">GameBox</div>
+  <div class="search">
+    <input type="text" placeholder="搜索游戏或制作方" id="searchInput" />
+  </div>
+  <button class="menu-btn" id="menuBtn" aria-label="菜单">≡</button>
+  <div class="menu-popup" id="menuPopup" role="menu">
+    <!-- 修复：添加无障碍属性 -->
+    <div class="menu-item" id="openSetting" role="menuitem" tabindex="0">设置</div>
+    <div class="menu-item" id="openAbout" role="menuitem" tabindex="0">关于</div>
+  </div>
+</div>
+<!-- 设置弹窗 -->
+<div class="modal" id="settingModal" role="dialog" aria-modal="true" aria-labelledby="settingTitle">
+  <div class="modal-box">
+    <div class="modal-title" id="settingTitle">设置</div>
+    <div class="modal-line">
+      <span>深色模式</span>
+      <!-- 修复：添加无障碍属性 -->
+      <div class="switch on" id="darkSwitch" tabindex="0" role="switch" aria-checked="true" aria-label="深色模式开关"></div>
+    </div>
+    <button class="dev-btn" id="devBtn">开发者选项</button>
+    <div class="close" id="closeSetting" tabindex="0">关闭</div>
+  </div>
+</div>
+<!-- 关于弹窗 -->
+<div class="modal" id="aboutModal" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+  <div class="modal-box">
+    <div class="modal-title" id="aboutTitle">关于</div>
+    <div style="line-height:1.6">
+      GameBox——新一代小游戏集合站<br>
+      作者：<a href="https://ri3bz6x.cn/" target="_blank" rel="noopener noreferrer">弘九honjiu</a><br>
+    </div>
+    <div class="close" id="closeAbout" tabindex="0">关闭</div>
+  </div>
+</div>
+<div class="container">
+  <h2 class="section-title">游戏中心</h2>
+  <div class="game-grid" id="gameList"></div>
+</div>
+<div class="footer">
+  © 2026 弘九honjiu All rights reserved.
+</div>
+<script>
+// 全局容错：元素不存在时不报错
+const $ = (id) => document.getElementById(id);
+
+// 核心元素获取
+const goHome = $('goHome');
+const menuBtn = $('menuBtn');
+const menuPopup = $('menuPopup');
+const openSetting = $('openSetting');
+const openAbout = $('openAbout');
+const settingModal = $('settingModal');
+const aboutModal = $('aboutModal');
+const closeSetting = $('closeSetting');
+const closeAbout = $('closeAbout');
+const darkSwitch = $('darkSwitch');
+const devBtn = $('devBtn');
+const gameList = $('gameList');
+const searchInput = $('searchInput');
+
+// 全局变量
+let originalBodyOverflow = '';
+let searchTimer = null;
+
+// ********** 核心bug修复 **********
+// 修复：logo跳转兼容file协议，避免origin为null导致跳转失败
+if (goHome) {
+  goHome.onclick = () => window.location.reload();
+}
+
+// 修复：菜单弹窗点击外部关闭
+if (menuBtn && menuPopup) {
+  menuBtn.onclick = (e) => {
+    e.stopPropagation();
+    menuPopup.classList.toggle('show');
+  };
+  // 点击外部关闭菜单
+  document.addEventListener('click', (e) => {
+    if (!menuBtn.contains(e.target) && !menuPopup.contains(e.target)) {
+      menuPopup.classList.remove('show');
+    }
+  });
+}
+
+// ********** 弹窗逻辑修复 **********
+// 关闭所有弹窗
+function closeAllPopups() {
+  menuPopup?.classList.remove('show');
+  settingModal?.classList.remove('show');
+  aboutModal?.classList.remove('show');
+  document.body.style.overflow = originalBodyOverflow;
+}
+
+// 打开弹窗通用函数
+function openModal(modal) {
+  if (!modal) return;
+  closeAllPopups();
+  originalBodyOverflow = document.body.style.overflow;
+  document.body.style.overflow = 'hidden'; // 禁止背景滚动
+  modal.classList.add('show');
+  // 焦点锁定到关闭按钮
+  modal.querySelector('.close')?.focus();
+}
+
+// 关闭弹窗通用函数
+function closeModal(modal) {
+  if (!modal) return;
+  modal.classList.remove('show');
+  document.body.style.overflow = originalBodyOverflow; // 恢复背景滚动
+  // 焦点回到触发元素
+  if (modal === settingModal) openSetting?.focus();
+  if (modal === aboutModal) openAbout?.focus();
+}
+
+// 绑定弹窗事件
+if (openSetting && settingModal) {
+  openSetting.onclick = () => openModal(settingModal);
+}
+if (openAbout && aboutModal) {
+  openAbout.onclick = () => openModal(aboutModal);
+}
+if (closeSetting) {
+  closeSetting.onclick = () => closeModal(settingModal);
+}
+if (closeAbout) {
+  closeAbout.onclick = () => closeModal(aboutModal);
+}
+
+// 修复：点击弹窗背景关闭
+document.querySelectorAll('.modal').forEach(modal => {
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal(modal);
+  });
+});
+// 阻止弹窗内容区域点击冒泡
+document.querySelectorAll('.modal-box').forEach(box => {
+  box.addEventListener('click', (e) => e.stopPropagation());
+});
+
+// 修复：ESC键关闭弹窗
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    // 优先级：菜单 > 弹窗
+    if (menuPopup?.classList.contains('show')) {
+      menuPopup.classList.remove('show');
+      return;
+    }
+    if (settingModal?.classList.contains('show')) {
+      closeModal(settingModal);
+      return;
+    }
+    if (aboutModal?.classList.contains('show')) {
+      closeModal(aboutModal);
+      return;
+    }
+  }
+});
+
+// ********** 深色模式修复：持久化+无障碍 **********
+if (darkSwitch) {
+  // 初始化：从localStorage读取配置
+  const savedMode = localStorage.getItem('darkMode');
+  const isDarkDefault = savedMode !== 'light';
+  if (!isDarkDefault) {
+    document.documentElement.classList.add('light');
+    darkSwitch.classList.remove('on');
+    darkSwitch.setAttribute('aria-checked', 'false');
+  }
+
+  // 切换逻辑
+  darkSwitch.onclick = () => {
+    const isDark = !darkSwitch.classList.contains('on');
+    darkSwitch.classList.toggle('on');
+    document.documentElement.classList.toggle('light');
+    // 更新无障碍属性
+    darkSwitch.setAttribute('aria-checked', isDark);
+    // 持久化到localStorage
+    localStorage.setItem('darkMode', isDark ? 'dark' : 'light');
+  };
+
+  // 键盘操作支持
+  darkSwitch.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      darkSwitch.click();
+    }
+  });
+}
+
+// 菜单项键盘操作支持
+document.querySelectorAll('.menu-item').forEach(item => {
+  item.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      item.click();
+    }
+  });
+});
+
+// ********** 安全漏洞修复 **********
+// 修复：加密函数增加环境判断+错误捕获，避免HTTP/file环境崩溃
+async function sha256Hash(str) {
+  try {
+    if (!window.crypto || !window.crypto.subtle) {
+      throw new Error('当前环境不支持加密API，请使用HTTPS协议访问');
+    }
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hash))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  } catch (err) {
+    console.error('哈希计算失败：', err);
+    alert(err.message || '加密功能不可用，请更换浏览器或使用HTTPS访问');
+    return null;
+  }
+}
+
+// 修复：管理员验证逻辑优化，增加逆向难度+输入容错
+if (devBtn) {
+  devBtn.onclick = async () => {
+    const user = prompt('请输入账户名称：')?.trim();
+    if (!user) return;
+    const pwd = prompt('请输入账户密码：')?.trim();
+    if (!pwd) return;
+
+    // 拆分敏感字符串，增加逆向难度
+    const validUser = 'hon' + 'jiu';
+    const validHash = 'f9e6b5197952d0f6672f27a70e9268c2195309e090325c3094385f3d9031c76a';
+    
+    // 分层验证，避免直接暴露判断逻辑
+    if (user !== validUser) {
+      alert('账户或密码错误');
+      return;
+    }
+
+    const inputPwdHash = await sha256Hash(pwd);
+    if (!inputPwdHash) return;
+
+    if (inputPwdHash === validHash) {
+      alert('验证成功！');
+      // 验证成功后的逻辑请放在此处，纯前端无法实现绝对安全，建议配合后端接口验证
+    } else {
+      alert('账户或密码错误');
+    }
+  };
+}
+
+// ********** 游戏数据与渲染逻辑修复 **********
+// 游戏数据
+const games = [
+  { title: "像素乒乓", desc: "制作方：弘九honjiu", wait: false, url: "https://stariver26.github.io/pingpong.html" },
+  { title: "终极塔防", desc: "制作方：弘九honjiu", wait: false, url: "https://stariver26.github.io/tafang.html" },
+  { title: "Dino Swords", desc: "制作方：MSCHF", wait: false, url: "https://dinoswords.gg/" },
+  { title: "正在开发", desc: "敬请期待", wait: true, url: null },
+  { title: "正在开发", desc: "敬请期待", wait: true, url: null },
+  { title: "正在开发", desc: "敬请期待", wait: true, url: null },
+  { title: "正在开发", desc: "敬请期待", wait: true, url: null },
+  { title: "正在开发", desc: "敬请期待", wait: true, url: null },
+];
+
+// 修复：渲染逻辑消除XSS漏洞，使用textContent替代innerHTML
+function render(filteredGames = null) {
+  if (!gameList) return;
+  gameList.innerHTML = '';
+  const displayGames = filteredGames || games;
+
+  // 无搜索结果提示
+  if (displayGames.length === 0) {
+    const noResult = document.createElement('div');
+    noResult.className = 'no-result';
+    noResult.textContent = '未找到游戏';
+    gameList.appendChild(noResult);
+    return;
+  }
+
+  displayGames.forEach((g, index) => {
+    const card = document.createElement('div');
+    card.className = `game-card ${g.wait ? 'wait' : ''}`;
+    // 动态设置动画延迟，替代CSS冗余代码
+    card.style.animationDelay = `${0.1 * (index + 1)}s`;
+
+    // 修复：使用textContent完全避免XSS注入
+    const titleDiv = document.createElement('div');
+    titleDiv.className = `game-title ${g.wait ? 'wait' : ''}`;
+    titleDiv.textContent = g.title;
+
+    const descDiv = document.createElement('div');
+    descDiv.className = 'game-desc';
+    descDiv.textContent = g.desc;
+
+    card.appendChild(titleDiv);
+    card.appendChild(descDiv);
+
+    // 修复：外部链接添加安全属性，防止opener钓鱼
+    if (g.url) {
+      card.onclick = () => {
+        window.open(g.url, '_blank', 'noopener noreferrer');
+      };
+    }
+    gameList.appendChild(card);
+  });
+}
+
+// 修复：搜索添加防抖，优化性能
+function handleSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    if (!searchInput) return;
+    const searchText = searchInput.value.trim().toLowerCase();
+    if (!searchText) {
+      render();
+      return;
+    }
+    // 筛选匹配游戏
+    const filtered = games.filter(game => 
+      game.title.toLowerCase().includes(searchText) || 
+      game.desc.toLowerCase().includes(searchText)
+    );
+    render(filtered);
+  }, 300); // 300ms防抖延迟
+}
+
+// 绑定搜索事件
+if (searchInput) {
+  searchInput.addEventListener('input', handleSearch);
+}
+
+// 初始化渲染
+render();
+</script>
+</body>
+</html>
