@@ -1,0 +1,4021 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Stariver</title>
+    <link rel="icon" href="https://s41.ax1x.com/2026/05/24/pm9722q.png" type="image/png">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            min-height: 100vh;
+            background: #f5f7fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            gap: 20px;
+            transition: background 0.3s ease;
+            position: relative;
+            overflow-x: hidden;
+        }
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.78);
+            --glass-bg-strong: rgba(255, 255, 255, 0.88);
+            --glass-bg-subtle: rgba(255, 255, 255, 0.55);
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            --glass-blur: blur(20px) saturate(160%);
+            --glass-blur-strong: blur(24px) saturate(180%);
+            --text-primary: #333;
+            --text-secondary: #666;
+        }
+        body.dark {
+            background: #1a1a1d;
+            --glass-bg: rgba(35, 35, 46, 0.78);
+            --glass-bg-strong: rgba(35, 35, 46, 0.88);
+            --glass-bg-subtle: rgba(35, 35, 46, 0.55);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+            --text-primary: #f5f5f5;
+            --text-secondary: #b0b0b8;
+        }
+        body.dark .liquid-glass {
+            background:
+                radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,0.25) 0%, transparent 45%),
+                radial-gradient(140% 140% at 80% 90%, rgba(255,255,255,0.12) 0%, transparent 40%),
+                var(--glass-bg);
+            border-color: rgba(255,255,255,0.22);
+            box-shadow:
+                0 8px 32px rgba(0,0,0,0.35),
+                inset 0 1px 1px rgba(255,255,255,0.25),
+                inset 0 -1px 1px rgba(0,0,0,0.15);
+        }
+        .menu-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px) saturate(160%);
+            -webkit-backdrop-filter: blur(12px) saturate(160%);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            font-size: 22px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            z-index: 10000;
+            touch-action: manipulation;
+            will-change: transform;
+        }
+        .menu-btn:hover {
+            background: var(--glass-bg-strong);
+            transform: scale(1.08);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        .menu-btn:active {
+            transform: scale(0.92);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .liquid-glass {
+            overflow: hidden;
+            background:
+                radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,0.55) 0%, transparent 45%),
+                radial-gradient(140% 140% at 80% 90%, rgba(255,255,255,0.25) 0%, transparent 40%),
+                var(--glass-bg);
+            backdrop-filter: blur(18px) saturate(180%);
+            -webkit-backdrop-filter: blur(18px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.35);
+            box-shadow:
+                0 8px 32px rgba(0,0,0,0.12),
+                inset 0 1px 1px rgba(255,255,255,0.45),
+                inset 0 -1px 1px rgba(0,0,0,0.05);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        box-shadow 0.25s ease,
+                        background 0.2s ease;
+            will-change: transform;
+        }
+        .engine-toggle.liquid-glass,
+        .add-shortcut-btn.liquid-glass {
+            position: relative;
+        }
+        .liquid-glass::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.35) 50%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .liquid-glass:hover::before { opacity: 1; }
+        .liquid-glass:hover {
+            transform: scale(1.06);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.18), inset 0 1px 1px rgba(255,255,255,0.5);
+        }
+        .liquid-glass:active {
+            transform: scale(0.94);
+        }
+        .menu-popup {
+            position: absolute;
+            top: 70px;
+            left: 20px;
+            width: 320px;
+            background: var(--glass-bg-strong);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            border-radius: 12px;
+            padding: 10px 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 10001;
+            opacity: 0;
+            transform: translateY(-15px) scale(0.95);
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            touch-action: manipulation;
+            will-change: opacity, transform;
+            overflow: hidden;
+        }
+        .menu-popup.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        .menu-main {
+            padding: 14px 24px;
+            color: var(--text-primary);
+            font-size: 17px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s, transform 0.2s;
+            touch-action: manipulation;
+            position: relative;
+            user-select: none;
+        }
+        .menu-main:hover {
+            background: rgba(128, 128, 128, 0.12);
+            transform: translateX(6px);
+        }
+        .menu-main:active {
+            background: rgba(128, 128, 128, 0.2);
+            transform: translateX(3px);
+        }
+        .menu-sub, .time-sub {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: max-height 0.3s, opacity 0.3s;
+            touch-action: manipulation;
+        }
+        .menu-sub {
+            background: var(--glass-bg-subtle);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            max-height: 0;
+            opacity: 0;
+        }
+        .menu-sub.show {
+            max-height: 500px;
+            opacity: 1;
+        }
+        .time-sub {
+            background: var(--glass-bg-subtle);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            max-height: 0;
+            opacity: 0;
+        }
+        .time-sub.show {
+            max-height: 100px;
+            opacity: 1;
+        }
+        .sub-item {
+            padding: 16px 24px;
+            color: var(--text-primary);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            transition: background 0.2s, transform 0.2s;
+            touch-action: manipulation;
+            user-select: none;
+        }
+        .sub-item:hover {
+            background: rgba(128, 128, 128, 0.12);
+            transform: translateX(6px);
+        }
+        .sub-item:active {
+            background: rgba(128, 128, 128, 0.2);
+            transform: translateX(3px);
+        }
+        .time-sub .sub-item:hover {
+            background: rgba(128, 128, 128, 0.12);
+        }
+        .time-sub .sub-item:active {
+            background: rgba(128, 128, 128, 0.2);
+        }
+        .switch-container {
+            position: relative;
+            width: 52px;
+            height: 30px;
+            flex-shrink: 0;
+        }
+        .switch {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 52px;
+            height: 30px;
+            border-radius: 15px;
+            background: #d1d5db;
+            cursor: pointer;
+            transition: background 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            touch-action: manipulation;
+            border: none;
+            z-index: 2;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.12);
+        }
+        .switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.04);
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s;
+            pointer-events: none;
+            transform: translateZ(0);
+        }
+        .switch.checked {
+            background: #165DFF;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.15), 0 0 12px rgba(22, 93, 255, 0.35);
+        }
+        .switch.checked::after {
+            transform: translateX(22px);
+            background: #fff;
+        }
+        body.dark .switch,
+        body:not(.light):not(.dark) .switch {
+            background: #3a3a4a;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.08);
+        }
+        body.dark .switch::after,
+        body:not(.light):not(.dark) .switch::after {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.06);
+        }
+        body.dark .switch.checked,
+        body:not(.light):not(.dark) .switch.checked {
+            background: #4c8dff;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.25), 0 0 20px rgba(76, 141, 255, 0.55);
+        }
+        /* 设置弹窗 */
+        .settings-modal-mask {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 20001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+        .settings-modal-mask.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        body.settings-open .menu-btn,
+        body.settings-open .search-box,
+        body.settings-open .shortcut-box,
+        body.settings-open #exploreTitle,
+        body.settings-open #timeDisplay {
+            pointer-events: none;
+        }
+        .settings-modal {
+            width: 420px;
+            max-width: 92vw;
+            max-height: 88vh;
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur-strong);
+            -webkit-backdrop-filter: var(--glass-blur-strong);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            box-shadow: var(--glass-shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: scale(0.92) translateY(20px);
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
+            pointer-events: none;
+            position: relative;
+        }
+        .settings-modal-mask.show .settings-modal {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .settings-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 26px 18px;
+            background: var(--glass-bg-subtle);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .settings-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+        .settings-close {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 12px;
+            background: var(--glass-bg-subtle);
+            color: var(--text-secondary);
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .settings-close:hover {
+            background: rgba(128, 128, 128, 0.2);
+            color: var(--text-primary);
+            transform: rotate(90deg);
+        }
+        .settings-body {
+            overflow-y: auto;
+            padding: 6px 20px 28px;
+        }
+        .settings-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        .settings-body::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.12);
+            border-radius: 3px;
+        }
+        .settings-section {
+            margin-top: 16px;
+            background: var(--glass-bg-subtle);
+            border-radius: 20px;
+            padding: 10px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.03);
+        }
+        .settings-section-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 10px 20px 8px;
+        }
+        .settings-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 13px 20px;
+            margin: 0 10px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background 0.18s, transform 0.15s;
+            user-select: none;
+            position: relative;
+        }
+        .settings-item::after {
+            content: '';
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            bottom: 0;
+            height: 1px;
+            background: var(--glass-border);
+        }
+        .settings-item:last-child::after {
+            display: none;
+        }
+        .settings-item:hover {
+            background: rgba(128, 128, 128, 0.12);
+        }
+        .settings-item:active {
+            transform: scale(0.985);
+        }
+        .settings-item-info {
+            flex: 1;
+            min-width: 0;
+            margin-right: 14px;
+        }
+        .settings-item-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .settings-item-name i {
+            width: 22px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .settings-item-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+            line-height: 1.35;
+        }
+        .settings-arrow {
+            color: var(--text-secondary);
+            font-size: 13px;
+            transition: transform 0.2s, color 0.2s;
+        }
+        .settings-item:hover .settings-arrow {
+            color: var(--text-primary);
+            transform: translateX(3px);
+        }
+        .settings-sub {
+            margin: 0 10px 0 26px;
+            padding-left: 16px;
+            border-left: 2px solid var(--glass-border);
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.35s ease, opacity 0.3s ease, margin 0.3s ease;
+        }
+        .settings-sub.show {
+            max-height: 200px;
+            opacity: 1;
+            margin: 4px 10px 6px 26px;
+        }
+        .settings-sub .settings-item {
+            padding: 11px 14px;
+            margin: 0;
+        }
+        .settings-sub .settings-item-name {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        body.dark .settings-modal,
+        body:not(.light):not(.dark) .settings-modal {
+            background: var(--glass-bg);
+            box-shadow: var(--glass-shadow);
+        }
+        body.dark .settings-header,
+        body:not(.light):not(.dark) .settings-header {
+            background: var(--glass-bg-subtle);
+            border-color: var(--glass-border);
+        }
+        body.dark .settings-title,
+        body:not(.light):not(.dark) .settings-title {
+            color: var(--text-primary);
+        }
+        body.dark .settings-close,
+        body:not(.light):not(.dark) .settings-close {
+            background: var(--glass-bg-subtle);
+            color: #a1a1aa;
+        }
+        body.dark .settings-close:hover,
+        body:not(.light):not(.dark) .settings-close:hover {
+            background: rgba(128, 128, 128, 0.2);
+            color: var(--text-primary);
+        }
+        body.dark .settings-body::-webkit-scrollbar-thumb,
+        body:not(.light):not(.dark) .settings-body::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.12);
+        }
+        body.dark .settings-section,
+        body:not(.light):not(.dark) .settings-section {
+            background: var(--glass-bg-subtle);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 0 0 1px rgba(255,255,255,0.04);
+        }
+        body.dark .settings-section-title,
+        body:not(.light):not(.dark) .settings-section-title {
+            color: var(--text-secondary);
+        }
+        body.dark .settings-item::after,
+        body:not(.light):not(.dark) .settings-item::after {
+            background: var(--glass-border);
+        }
+        body.dark .settings-item:hover,
+        body:not(.light):not(.dark) .settings-item:hover {
+            background: rgba(128, 128, 128, 0.12);
+        }
+        body.dark .settings-item-name,
+        body:not(.light):not(.dark) .settings-item-name {
+            color: var(--text-primary);
+        }
+        body.dark .settings-item-name i,
+        body:not(.light):not(.dark) .settings-item-name i {
+            color: var(--text-secondary);
+        }
+        body.dark .settings-item-desc,
+        body:not(.light):not(.dark) .settings-item-desc {
+            color: var(--text-secondary);
+        }
+        body.dark .settings-arrow,
+        body:not(.light):not(.dark) .settings-arrow {
+            color: var(--text-secondary);
+        }
+        body.dark .settings-sub,
+        body:not(.light):not(.dark) .settings-sub {
+            border-left-color: var(--glass-border);
+        }
+        body.dark .settings-sub .settings-item-name,
+        body:not(.light):not(.dark) .settings-sub .settings-item-name {
+            color: var(--text-secondary);
+        }
+        .switch-hit-area {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            z-index: 1;
+            cursor: pointer;
+        }
+        .title-time {
+            font-size: 48px;
+            font-weight: 600;
+            color: #333;
+            letter-spacing: 2px;
+            pointer-events: none;
+        }
+        .title-time img {
+            max-height: 160px;
+            vertical-align: middle;
+            pointer-events: none;
+        }
+        .title-time.hidden {
+            display: none;
+        }
+        .title-time.show {
+            display: block;
+        }
+        .search-box {
+            width: 100%;
+            max-width: 600px;
+            position: relative;
+            margin-top: 10px;
+            margin-bottom: 30px;
+            opacity: 0;
+            transform: translateY(20px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: fadeUp 0.8s ease 0.5s forwards;
+            touch-action: manipulation;
+            z-index: 10000;
+        }
+        .search-input {
+            flex: 1;
+            height: 50px;
+            padding: 0 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px) saturate(160%);
+            -webkit-backdrop-filter: blur(12px) saturate(160%);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            box-shadow: var(--glass-shadow);
+            transition: box-shadow 0.2s, transform 0.2s, background 0.2s, border-color 0.2s;
+            touch-action: manipulation;
+        }
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+        .search-input:focus {
+            background: var(--glass-bg-strong);
+            box-shadow: 0 6px 24px rgba(22, 93, 255, 0.25);
+            transform: scale(1.03);
+        }
+        .search-input:active {
+            transform: scale(0.98);
+        }
+        .engine-toggle {
+            width: 90px;
+            height: 50px;
+            border: none;
+            border-radius: 25px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px) saturate(160%);
+            -webkit-backdrop-filter: blur(12px) saturate(160%);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            box-shadow: var(--glass-shadow);
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: box-shadow 0.2s, transform 0.2s, background 0.2s, border-color 0.2s;
+            touch-action: manipulation;
+            flex-shrink: 0;
+        }
+        .engine-toggle:hover {
+            box-shadow: 0 6px 20px rgba(22, 93, 255, 0.2);
+            transform: scale(1.03);
+        }
+        .engine-toggle:active {
+            transform: scale(0.98);
+        }
+        .engine-panel {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            width: 120px;
+            background: var(--glass-bg-strong);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            border-radius: 12px;
+            padding: 8px 0;
+            z-index: 10001;
+            opacity: 0;
+            transform: translateY(-10px) scale(0.95);
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            touch-action: manipulation;
+            will-change: opacity, transform;
+        }
+        .engine-panel.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        .engine-item {
+            width: 100%;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            text-align: left;
+            cursor: pointer;
+            font-size: 15px;
+            color: var(--text-primary);
+            transition: background 0.2s, transform 0.2s;
+            touch-action: manipulation;
+        }
+        .engine-item:hover {
+            background: rgba(128, 128, 128, 0.12);
+            transform: translateX(6px);
+        }
+        .engine-item:active {
+            background: rgba(128, 128, 128, 0.2);
+            transform: translateX(3px);
+        }
+        .search-record {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            box-shadow: var(--glass-shadow);
+            padding: 10px 0;
+            z-index: 10002;
+            opacity: 0;
+            transform: translateY(-10px) scale(0.95);
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            touch-action: manipulation;
+            will-change: opacity, transform;
+        }
+        .search-record.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        .record-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px 8px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .record-title {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .clear-all {
+            font-size: 14px;
+            color: #165DFF;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+        }
+        .record-list {
+            padding: 8px 0;
+        }
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            font-size: 15px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .record-item:hover {
+            background: rgba(128, 128, 128, 0.12);
+        }
+        .record-item i {
+            color: var(--text-secondary);
+            font-size: 14px;
+            display: none;
+        }
+        .record-item:hover i {
+            display: block;
+        }
+        .record-empty {
+            padding: 20px;
+            text-align: center;
+            font-size: 15px;
+            color: var(--text-secondary);
+        }
+        .search-record::-webkit-scrollbar {
+            width: 4px;
+        }
+        .search-record::-webkit-scrollbar-thumb {
+            background: #e0e0e0;
+            border-radius: 2px;
+        }
+        /* 搜索联想样式 */
+        .search-suggest {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            box-shadow: var(--glass-shadow);
+            padding: 10px 0;
+            z-index: 10001;
+            opacity: 0;
+            transform: translateY(-10px) scale(0.95);
+            pointer-events: none;
+            transition: opacity 0.2s, transform 0.2s;
+            touch-action: manipulation;
+            will-change: opacity, transform;
+        }
+        .search-suggest.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        .suggest-group-title {
+            padding: 6px 20px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            opacity: 0.8;
+        }
+        .suggest-item {
+            padding: 10px 20px;
+            font-size: 15px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .suggest-item:hover {
+            background: rgba(128, 128, 128, 0.12);
+        }
+        .suggest-item i {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .search-suggest::-webkit-scrollbar {
+            width: 4px;
+        }
+        .search-suggest::-webkit-scrollbar-thumb {
+            background: #e0e0e0;
+            border-radius: 2px;
+        }
+        .shortcut-box {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            touch-action: manipulation;
+            position: relative;
+            z-index: 1;
+            max-width: 600px;
+        }
+        .shortcut-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            transform: scale(0.8) translateY(30px);
+            animation: popIn 0.6s ease forwards;
+            position: relative;
+            z-index: 1;
+        }
+        .shortcut-wrap:hover {
+            z-index: 10;
+        }
+        .shortcut-wrap:nth-child(n) {
+            animation-delay: calc(0.7s + (var(--index) * 0.1s));
+        }
+        .shortcut-item {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px) saturate(160%);
+            -webkit-backdrop-filter: blur(12px) saturate(160%);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            position: relative;
+            transition: transform 0.4s, box-shadow 0.4s, background 0.2s, border-color 0.2s;
+            touch-action: manipulation;
+            z-index: 1;
+            transform: translateZ(0);
+            overflow: visible;
+        }
+        .shortcut-item:hover {
+            background: var(--glass-bg-strong);
+            transform: scale(1.1) translateY(-8px);
+            box-shadow: 0 10px 25px rgba(22, 93, 255, 0.2);
+        }
+        .shortcut-item:active {
+            transform: scale(0.9) translateY(0);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .shortcut-char {
+            font-size: 32px;
+            font-weight: bold;
+            color: #165DFF;
+            user-select: none;
+        }
+        .shortcut-name {
+            font-size: 13px;
+            color: var(--text-primary);
+            text-align: center;
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 1.2;
+        }
+        .shortcut-delete {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #ff4d4f;
+            color: #fff;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 20;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transform: translateZ(0);
+        }
+        .shortcut-wrap:hover .shortcut-delete {
+            display: flex;
+        }
+        .add-shortcut-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px) saturate(160%);
+            -webkit-backdrop-filter: blur(12px) saturate(160%);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 32px;
+            color: #165DFF;
+            transition: transform 0.4s, box-shadow 0.4s, background 0.2s, border-color 0.2s;
+            touch-action: manipulation;
+            z-index: 1;
+            opacity: 0;
+            transform: scale(0.8) translateY(30px);
+            animation: popIn 0.6s ease 1.2s forwards;
+        }
+        .add-shortcut-btn:hover {
+            background: var(--glass-bg-strong);
+            transform: scale(1.1) translateY(-8px);
+            box-shadow: 0 10px 25px rgba(22, 93, 255, 0.25);
+        }
+        .add-shortcut-btn:active {
+            transform: scale(0.9) translateY(0);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .add-shortcut-btn.hidden {
+            display: none;
+        }
+        .add-shortcut-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, background 0.3s, backdrop-filter 0.3s;
+            touch-action: manipulation;
+        }
+        .add-shortcut-mask.show {
+            opacity: 1;
+            pointer-events: auto;
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(6px);
+        }
+        .add-shortcut-box {
+            width: 320px;
+            padding: 30px 24px;
+            background: var(--glass-bg-strong);
+            backdrop-filter: var(--glass-blur-strong);
+            -webkit-backdrop-filter: var(--glass-blur-strong);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            box-shadow: var(--glass-shadow);
+            transform: scale(0.85) translateY(30px);
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            touch-action: manipulation;
+        }
+        .add-shortcut-mask.show .add-shortcut-box {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+        .add-shortcut-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .add-input-group {
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .add-input-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .add-input {
+            width: 100%;
+            height: 44px;
+            padding: 0 16px;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            font-size: 15px;
+            color: var(--text-primary);
+            background: var(--glass-bg-subtle);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .add-input:focus {
+            border-color: #165DFF;
+            box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1);
+        }
+        .add-input::placeholder {
+            color: var(--text-secondary);
+        }
+        .add-btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        .add-btn-cancel, .add-btn-confirm {
+            flex: 1;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .add-btn-cancel {
+            background: var(--glass-bg-subtle);
+            color: var(--text-primary);
+        }
+        .add-btn-cancel:hover {
+            background: rgba(128, 128, 128, 0.2);
+            transform: scale(1.05);
+        }
+        .add-btn-cancel:active {
+            transform: scale(0.95);
+        }
+        .add-btn-confirm {
+            background: #165DFF;
+            color: #fff;
+        }
+        .add-btn-confirm:hover {
+            background: #0d47cc;
+            transform: scale(1.05);
+        }
+        .add-btn-confirm:active {
+            transform: scale(0.95);
+        }
+        .about-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, background 0.3s, backdrop-filter 0.3s;
+            touch-action: manipulation;
+        }
+        .about-mask.show {
+            opacity: 1;
+            pointer-events: auto;
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(6px);
+        }
+        .about-box {
+            width: 320px;
+            padding: 30px 24px;
+            background: var(--glass-bg-strong);
+            backdrop-filter: var(--glass-blur-strong);
+            -webkit-backdrop-filter: var(--glass-blur-strong);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            box-shadow: var(--glass-shadow);
+            transform: scale(0.85) translateY(30px);
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            touch-action: manipulation;
+        }
+        .about-mask.show .about-box {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+        .about-version {
+            font-size: 18px;
+            font-weight: 600;
+            color: #165DFF;
+            margin-bottom: 20px;
+        }
+        .about-text {
+            font-size: 16px;
+            color: var(--text-primary);
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        .about-copyright {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .about-close {
+            margin-top: 20px;
+            padding: 8px 24px;
+            background: var(--glass-bg-subtle);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+            touch-action: manipulation;
+        }
+        .about-close:hover {
+            background: rgba(128, 128, 128, 0.2);
+            transform: scale(1.08);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        .about-close:active {
+            transform: scale(0.92);
+            box-shadow: none;
+            background: #dee2e6;
+        }
+        @keyframes fadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) translateY(30px);
+            }
+            70% {
+                transform: scale(1.05) translateY(-5px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        body.dark .title-time,
+        body.dark .menu-btn,
+        body.dark .menu-main,
+        body.dark .sub-item,
+        body.dark .search-input,
+        body.dark .engine-toggle,
+        body.dark .engine-item,
+        body.dark .record-item,
+        body.dark .clear-all,
+        body.dark .shortcut-name,
+        body.dark .add-shortcut-title,
+        body.dark .add-input-label,
+        body.dark .suggest-item {
+            color: var(--text-primary);
+        }
+        body.dark .menu-btn {
+            background: var(--glass-bg);
+            box-shadow: var(--glass-shadow);
+        }
+        body.dark .menu-btn:hover {
+            background: var(--glass-bg-strong);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        body.dark .menu-popup {
+            background: var(--glass-bg-strong);
+            box-shadow: var(--glass-shadow);
+        }
+        body.dark .menu-main:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        body.dark .menu-main:active {
+            background: rgba(255,255,255,0.12);
+        }
+        body.dark .menu-sub {
+            background: var(--glass-bg-subtle);
+        }
+        body.dark .time-sub {
+            background: var(--glass-bg-subtle);
+        }
+        body.dark .sub-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        body.dark .sub-item:active {
+            background: rgba(255,255,255,0.12);
+        }
+        body.dark .time-sub .sub-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        body.dark .time-sub .sub-item:active {
+            background: rgba(255,255,255,0.14);
+        }
+        body.dark .search-input,
+        body.dark .engine-toggle {
+            background: var(--glass-bg);
+            box-shadow: var(--glass-shadow);
+        }
+        body.dark .search-input:focus {
+            background: var(--glass-bg-strong);
+            box-shadow: 0 6px 24px rgba(22, 93, 255, 0.3);
+        }
+        body.dark .engine-panel {
+            background: var(--glass-bg-strong);
+            box-shadow: var(--glass-shadow);
+        }
+        body.dark .engine-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        body.dark .engine-item:active {
+            background: rgba(255,255,255,0.12);
+        }
+        body.dark .shortcut-item,
+        body.dark .add-shortcut-btn {
+            background: var(--glass-bg);
+            box-shadow: var(--glass-shadow);
+        }
+        body.dark .shortcut-item:hover {
+            background: var(--glass-bg-strong);
+            box-shadow: 0 10px 25px rgba(22, 93, 255, 0.25);
+        }
+        body.dark .add-shortcut-btn:hover {
+            background: var(--glass-bg-strong);
+            box-shadow: 0 10px 25px rgba(22, 93, 255, 0.25);
+        }
+        body.dark .add-shortcut-box,
+        body.dark .about-box {
+            background: var(--glass-bg-strong);
+            box-shadow: var(--glass-shadow);
+        }
+        body.dark .add-input {
+            background: var(--glass-bg-subtle);
+            border-color: var(--glass-border);
+            color: var(--text-primary);
+        }
+        body.dark .add-input:focus {
+            border-color: #4080ff;
+        }
+        body.dark .add-input::placeholder {
+            color: var(--text-secondary);
+        }
+        body.dark .add-btn-cancel {
+            background: var(--glass-bg-subtle);
+            color: var(--text-primary);
+        }
+        body.dark .add-btn-cancel:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        body.dark .about-version {
+            color: #4080ff;
+        }
+        body.dark .about-text {
+            color: var(--text-primary);
+        }
+        body.dark .about-copyright {
+            color: var(--text-secondary);
+        }
+        body.dark .about-close {
+            background: var(--glass-bg-subtle);
+            color: var(--text-primary);
+        }
+        body.dark .about-close:hover {
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        body.dark .about-close:active {
+            background: rgba(255,255,255,0.15);
+        }
+        body.dark .search-record {
+            background: rgba(35, 35, 46, 0.96);
+            box-shadow: var(--glass-shadow);
+        }
+        body.dark .record-header {
+            border-bottom-color: var(--glass-border);
+        }
+        body.dark .record-title,
+        body.dark .record-empty {
+            color: var(--text-secondary);
+        }
+        body.dark .record-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        body.dark .record-item i {
+            color: var(--text-secondary);
+        }
+        body.dark .clear-all {
+            color: #4080ff;
+        }
+        body.dark .search-record::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.12);
+        }
+        body.dark .search-suggest {
+            background: rgba(35, 35, 46, 0.96);
+            box-shadow: var(--glass-shadow);
+        }
+        body.dark .suggest-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        body.dark .suggest-item i {
+            color: var(--text-secondary);
+        }
+        body.dark .search-suggest::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.12);
+        }
+        @media (prefers-color-scheme: dark) {
+            body:not(.light):not(.dark) {
+                background: #1a1a1d;
+                --glass-bg: rgba(35, 35, 46, 0.78);
+                --glass-bg-strong: rgba(35, 35, 46, 0.88);
+                --glass-bg-subtle: rgba(35, 35, 46, 0.55);
+                --glass-border: rgba(255, 255, 255, 0.08);
+                --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+                --text-primary: #f5f5f5;
+                --text-secondary: #b0b0b8;
+            }
+            body:not(.light):not(.dark) .title,
+            body:not(.light):not(.dark) .menu-btn,
+            body:not(.light):not(.dark) .menu-main,
+            body:not(.light):not(.dark) .sub-item,
+            body:not(.light):not(.dark) .search-input,
+            body:not(.light):not(.dark) .engine-toggle,
+            body:not(.light):not(.dark) .engine-item,
+            body:not(.light):not(.dark) .record-item,
+            body:not(.light):not(.dark) .clear-all,
+            body:not(.light):not(.dark) .shortcut-name,
+            body:not(.light):not(.dark) .add-shortcut-title,
+            body:not(.light):not(.dark) .add-input-label,
+            body:not(.light):not(.dark) .suggest-item {
+                color: var(--text-primary);
+            }
+            body:not(.light):not(.dark) .menu-btn {
+                background: var(--glass-bg);
+                box-shadow: var(--glass-shadow);
+            }
+            body:not(.light):not(.dark) .menu-popup {
+                background: var(--glass-bg-strong);
+                box-shadow: var(--glass-shadow);
+            }
+            body:not(.light):not(.dark) .menu-sub {
+                background: var(--glass-bg-subtle);
+            }
+            body:not(.light):not(.dark) .time-sub {
+                background: var(--glass-bg-subtle);
+            }
+            body:not(.light):not(.dark) .sub-item:hover {
+                background: rgba(255,255,255,0.08);
+            }
+            body:not(.light):not(.dark) .sub-item:active {
+                background: rgba(255,255,255,0.12);
+            }
+            body:not(.light):not(.dark) .time-sub .sub-item:hover {
+                background: rgba(255,255,255,0.1);
+            }
+            body:not(.light):not(.dark) .time-sub .sub-item:active {
+                background: rgba(255,255,255,0.14);
+            }
+            body:not(.light):not(.dark) .search-input,
+            body:not(.light):not(.dark) .engine-toggle {
+                background: var(--glass-bg);
+                box-shadow: var(--glass-shadow);
+            }
+            body:not(.light):not(.dark) .search-input:focus {
+                background: var(--glass-bg-strong);
+                box-shadow: 0 6px 24px rgba(22, 93, 255, 0.3);
+            }
+            body:not(.light):not(.dark) .engine-panel {
+                background: var(--glass-bg-strong);
+                box-shadow: var(--glass-shadow);
+            }
+            body:not(.light):not(.dark) .engine-item:hover {
+                background: rgba(255,255,255,0.08);
+            }
+            body:not(.light):not(.dark) .engine-item:active {
+                background: rgba(255,255,255,0.12);
+            }
+            body:not(.light):not(.dark) .shortcut-item,
+            body:not(.light):not(.dark) .add-shortcut-btn {
+                background: var(--glass-bg);
+                box-shadow: var(--glass-shadow);
+            }
+            body:not(.light):not(.dark) .shortcut-item:hover {
+                background: var(--glass-bg-strong);
+                box-shadow: 0 10px 25px rgba(22, 93, 255, 0.25);
+            }
+            body:not(.light):not(.dark) .add-shortcut-btn:hover {
+                background: var(--glass-bg-strong);
+                box-shadow: 0 10px 25px rgba(22, 93, 255, 0.25);
+            }
+            body:not(.light):not(.dark) .add-shortcut-box,
+            body:not(.light):not(.dark) .about-box {
+                background: var(--glass-bg-strong);
+                box-shadow: var(--glass-shadow);
+            }
+            body:not(.light):not(.dark) .add-input {
+                background: var(--glass-bg-subtle);
+                border-color: var(--glass-border);
+                color: var(--text-primary);
+            }
+            body:not(.light):not(.dark) .add-input:focus {
+                border-color: #4080ff;
+            }
+            body:not(.light):not(.dark) .add-input::placeholder {
+                color: var(--text-secondary);
+            }
+            body:not(.light):not(.dark) .add-btn-cancel {
+                background: var(--glass-bg-subtle);
+                color: var(--text-primary);
+            }
+            body:not(.light):not(.dark) .add-btn-cancel:hover {
+                background: rgba(255,255,255,0.1);
+            }
+            body:not(.light):not(.dark) .about-version {
+                color: #4080ff;
+            }
+            body:not(.light):not(.dark) .about-text {
+                color: var(--text-primary);
+            }
+            body:not(.light):not(.dark) .about-copyright {
+                color: var(--text-secondary);
+            }
+            body:not(.light):not(.dark) .about-close {
+                background: var(--glass-bg-subtle);
+                color: var(--text-primary);
+            }
+            body:not(.light):not(.dark) .about-close:hover {
+                background: rgba(255,255,255,0.1);
+                box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            }
+            body:not(.light):not(.dark) .about-close:active {
+                background: rgba(255,255,255,0.15);
+            }
+            body:not(.light):not(.dark) .search-record {
+                background: rgba(35, 35, 46, 0.96);
+                box-shadow: var(--glass-shadow);
+            }
+            body:not(.light):not(.dark) .record-header {
+                border-bottom-color: var(--glass-border);
+            }
+            body:not(.light):not(.dark) .record-title,
+            body:not(.light):not(.dark) .record-empty {
+                color: var(--text-secondary);
+            }
+            body:not(.light):not(.dark) .record-item:hover {
+                background: rgba(255,255,255,0.08);
+            }
+            body:not(.light):not(.dark) .record-item i {
+                color: var(--text-secondary);
+            }
+            body:not(.light):not(.dark) .clear-all {
+                color: #4080ff;
+            }
+            body:not(.light):not(.dark) .search-record::-webkit-scrollbar-thumb {
+                background: rgba(255,255,255,0.12);
+            }
+            body:not(.light):not(.dark) .search-suggest {
+                background: rgba(35, 35, 46, 0.96);
+                box-shadow: var(--glass-shadow);
+            }
+            body:not(.light):not(.dark) .suggest-item:hover {
+                background: rgba(255,255,255,0.08);
+            }
+            body:not(.light):not(.dark) .suggest-item i {
+                color: var(--text-secondary);
+            }
+            body:not(.light):not(.dark) .search-suggest::-webkit-scrollbar-thumb {
+                background: rgba(255,255,255,0.12);
+            }
+        }
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+                gap: 16px;
+            }
+            .menu-btn {
+                width: 42px;
+                height: 42px;
+                font-size: 20px;
+                top: 12px;
+                left: 12px;
+            }
+            .menu-popup {
+                top: 62px;
+                left: 12px;
+                width: min(300px, calc(100vw - 24px));
+            }
+            .title-time {
+                font-size: 32px;
+                letter-spacing: 1px;
+            }
+            .title-time img {
+                max-height: 110px;
+            }
+            .custom-title-text {
+                font-size: 28px;
+            }
+            #timeDisplay {
+                font-size: 14px;
+            }
+            .search-box {
+                width: 100%;
+                gap: 8px;
+                margin-top: 8px;
+                margin-bottom: 20px;
+            }
+            .search-input {
+                flex: 1;
+                min-width: 0;
+                height: 46px;
+                padding: 0 16px;
+                font-size: 16px;
+            }
+            .engine-toggle {
+                width: 76px;
+                height: 46px;
+                font-size: 14px;
+                flex-shrink: 0;
+            }
+            .engine-panel {
+                width: 100px;
+                top: 54px;
+                z-index: 10001;
+            }
+            .search-record, .search-suggest {
+                top: 56px;
+            }
+            .shortcut-box {
+                gap: 16px;
+                max-width: 100%;
+                padding: 0 4px;
+            }
+            .shortcut-item, .add-shortcut-btn {
+                width: 68px;
+                height: 68px;
+            }
+            .shortcut-char {
+                font-size: 26px;
+            }
+            .shortcut-name {
+                font-size: 12px;
+                max-width: 68px;
+            }
+            .add-shortcut-btn {
+                font-size: 26px;
+            }
+            .settings-modal {
+                width: 92vw;
+                max-height: 86vh;
+                border-radius: 22px;
+            }
+            .settings-header {
+                padding: 18px 20px 14px;
+            }
+            .settings-title {
+                font-size: 20px;
+            }
+            .settings-body {
+                padding: 6px 16px 22px;
+            }
+            .settings-section {
+                margin-top: 14px;
+                border-radius: 16px;
+            }
+            .settings-section-title {
+                padding: 10px 16px 6px;
+            }
+            .settings-item {
+                padding: 12px 16px;
+                margin: 0 8px;
+                border-radius: 12px;
+            }
+            .settings-item-name {
+                font-size: 14px;
+            }
+            .settings-item-desc {
+                font-size: 11px;
+            }
+            .add-shortcut-box, .about-box, .custom-dialog-box {
+                width: min(320px, 88vw);
+                padding: 24px 20px;
+            }
+            .add-shortcut-title {
+                font-size: 17px;
+            }
+            .add-input {
+                height: 42px;
+                font-size: 15px;
+            }
+            .bg-mode-tab {
+                font-size: 13px;
+                padding: 7px 0;
+            }
+        }
+        @media (max-width: 400px) {
+            body {
+                padding: 14px;
+                gap: 14px;
+            }
+            .title-time {
+                font-size: 28px;
+            }
+            .title-time img {
+                max-height: 100px;
+            }
+            .custom-title-text {
+                font-size: 24px;
+            }
+            .search-input {
+                height: 44px;
+                font-size: 16px;
+            }
+            .engine-toggle {
+                width: 70px;
+                height: 44px;
+                font-size: 13px;
+            }
+            .shortcut-item, .add-shortcut-btn {
+                width: 64px;
+                height: 64px;
+            }
+            .shortcut-char {
+                font-size: 24px;
+            }
+            .shortcut-name {
+                font-size: 11px;
+                max-width: 64px;
+            }
+            .shortcut-box {
+                gap: 14px;
+            }
+            .settings-modal {
+                border-radius: 20px;
+            }
+            .switch-container {
+                width: 48px;
+                height: 28px;
+            }
+            .switch {
+                width: 48px;
+                height: 28px;
+                border-radius: 14px;
+            }
+            .switch::after {
+                width: 24px;
+                height: 24px;
+            }
+            .switch.checked::after {
+                transform: translateX(20px);
+            }
+        }
+        @media (max-width: 360px) {
+            .engine-panel {
+                right: -8px;
+                z-index: 10001;
+            }
+            .shortcut-item, .add-shortcut-btn {
+                width: 60px;
+                height: 60px;
+            }
+            .shortcut-char {
+                font-size: 22px;
+            }
+            .shortcut-name {
+                max-width: 60px;
+            }
+            .search-input {
+                padding: 0 12px;
+            }
+        }
+        @media (max-width: 320px) {
+            .shortcut-box {
+                gap: 12px;
+            }
+            .shortcut-item, .add-shortcut-btn {
+                width: 56px;
+                height: 56px;
+            }
+            .shortcut-char {
+                font-size: 20px;
+            }
+            .shortcut-name {
+                font-size: 10px;
+                max-width: 56px;
+            }
+            .engine-toggle {
+                width: 64px;
+                font-size: 12px;
+            }
+        }
+        /* 自定义标题与背景 */
+        .custom-title-text {
+            font-size: 48px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: 2px;
+            text-align: center;
+        }
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: -1;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .bg-overlay.show {
+            opacity: 1;
+        }
+        /* 毛玻璃模式 */
+        body.has-custom-bg .menu-btn,
+        body.has-custom-bg .search-input,
+        body.has-custom-bg .engine-toggle,
+        body.has-custom-bg .shortcut-item,
+        body.has-custom-bg .add-shortcut-btn,
+        body.has-custom-bg .menu-popup,
+        body.has-custom-bg .engine-panel,
+        body.has-custom-bg .search-record,
+        body.has-custom-bg .search-suggest,
+        body.has-custom-bg .add-shortcut-box,
+        body.has-custom-bg .about-box,
+        body.has-custom-bg .custom-dialog-box,
+        body.has-custom-bg .settings-modal,
+        body.has-custom-bg .settings-header,
+        body.has-custom-bg .settings-section,
+        body.has-custom-bg .settings-close,
+        body.has-custom-bg .add-btn-cancel,
+        body.has-custom-bg .about-close,
+        body.has-custom-bg .bg-mode-tabs,
+        body.has-custom-bg .bg-mode-tab.active,
+        body.has-custom-bg .file-upload-btn {
+            background: rgba(255, 255, 255, 0.18) !important;
+            backdrop-filter: blur(16px) saturate(160%);
+            -webkit-backdrop-filter: blur(16px) saturate(160%);
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+            overflow: hidden;
+        }
+        body.has-custom-bg .shortcut-item {
+            overflow: visible;
+        }
+        body.has-custom-bg.dark .menu-btn,
+        body.has-custom-bg.dark .search-input,
+        body.has-custom-bg.dark .engine-toggle,
+        body.has-custom-bg.dark .shortcut-item,
+        body.has-custom-bg.dark .add-shortcut-btn,
+        body.has-custom-bg.dark .menu-popup,
+        body.has-custom-bg.dark .engine-panel,
+        body.has-custom-bg.dark .search-record,
+        body.has-custom-bg.dark .search-suggest,
+        body.has-custom-bg.dark .add-shortcut-box,
+        body.has-custom-bg.dark .about-box,
+        body.has-custom-bg.dark .custom-dialog-box,
+        body.has-custom-bg.dark .settings-modal,
+        body.has-custom-bg.dark .settings-header,
+        body.has-custom-bg.dark .settings-section,
+        body.has-custom-bg.dark .settings-close,
+        body.has-custom-bg.dark .add-btn-cancel,
+        body.has-custom-bg.dark .about-close,
+        body.has-custom-bg.dark .bg-mode-tabs,
+        body.has-custom-bg.dark .bg-mode-tab.active,
+        body.has-custom-bg.dark .file-upload-btn {
+            background: rgba(20, 20, 28, 0.55) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+        }
+        body.has-custom-bg .liquid-glass {
+            background: rgba(255,255,255,0.18) !important;
+            backdrop-filter: blur(16px) saturate(160%) !important;
+            -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+            border-color: rgba(255,255,255,0.4) !important;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+        }
+        body.has-custom-bg.dark .liquid-glass {
+            background: rgba(20,20,28,0.55) !important;
+            border-color: rgba(255,255,255,0.2) !important;
+        }
+        body.has-custom-bg .search-input,
+        body.has-custom-bg .engine-toggle {
+            background: rgba(255, 255, 255, 0.28) !important;
+            backdrop-filter: blur(20px) saturate(160%) !important;
+            -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+        }
+        body.has-custom-bg.dark .search-input,
+        body.has-custom-bg.dark .engine-toggle {
+            background: rgba(20, 20, 28, 0.55) !important;
+        }
+        body.has-custom-bg .search-record,
+        body.has-custom-bg .search-suggest {
+            background: rgba(255, 255, 255, 0.32) !important;
+            backdrop-filter: blur(24px) saturate(160%) !important;
+            -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+        }
+        body.has-custom-bg.dark .search-record,
+        body.has-custom-bg.dark .search-suggest {
+            background: rgba(20, 20, 28, 0.55) !important;
+        }
+
+        body.has-custom-bg .menu-main,
+        body.has-custom-bg .sub-item,
+        body.has-custom-bg .menu-sub,
+        body.has-custom-bg .time-sub,
+        body.has-custom-bg .engine-item,
+        body.has-custom-bg .record-item,
+        body.has-custom-bg .suggest-item,
+        body.has-custom-bg .clear-all {
+            background: transparent !important;
+        }
+        body.has-custom-bg .menu-main:hover,
+        body.has-custom-bg .sub-item:hover,
+        body.has-custom-bg .engine-item:hover,
+        body.has-custom-bg .record-item:hover,
+        body.has-custom-bg .suggest-item:hover,
+        body.has-custom-bg .clear-all:hover {
+            background: rgba(255, 255, 255, 0.15) !important;
+        }
+        body.has-custom-bg.dark .menu-main:hover,
+        body.has-custom-bg.dark .sub-item:hover,
+        body.has-custom-bg.dark .engine-item:hover,
+        body.has-custom-bg.dark .record-item:hover,
+        body.has-custom-bg.dark .suggest-item:hover,
+        body.has-custom-bg.dark .clear-all:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+        body.has-custom-bg .shortcut-char,
+        body.has-custom-bg .shortcut-name,
+        body.has-custom-bg .engine-toggle,
+        body.has-custom-bg .menu-btn,
+        body.has-custom-bg .add-shortcut-btn,
+        body.has-custom-bg .search-input,
+        body.has-custom-bg .menu-main,
+        body.has-custom-bg .sub-item,
+        body.has-custom-bg .engine-item,
+        body.has-custom-bg .record-item,
+        body.has-custom-bg .suggest-item,
+        body.has-custom-bg .clear-all,
+        body.has-custom-bg .add-shortcut-title,
+        body.has-custom-bg .about-title,
+        body.has-custom-bg .about-content,
+        body.has-custom-bg .add-input-label,
+        body.has-custom-bg .settings-title,
+        body.has-custom-bg .settings-item-name,
+        body.has-custom-bg .settings-item-desc,
+        body.has-custom-bg .settings-section-title,
+        body.has-custom-bg .settings-arrow {
+            color: #fff !important;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        body.has-custom-bg .search-input::placeholder {
+            color: rgba(255,255,255,0.7) !important;
+        }
+        body.has-custom-bg.light .search-record .record-item,
+        body.has-custom-bg.light .search-record .record-title,
+        body.has-custom-bg.light .search-record .record-empty,
+        body.has-custom-bg.light .search-record .clear-all,
+        body.has-custom-bg.light .search-suggest .suggest-item,
+        body.has-custom-bg.light .menu-popup .menu-main,
+        body.has-custom-bg.light .menu-popup .sub-item,
+        body.has-custom-bg.light .engine-panel .engine-item {
+            color: #333 !important;
+            text-shadow: none !important;
+        }
+        body.has-custom-bg.light .search-input {
+            color: #333 !important;
+            text-shadow: none !important;
+        }
+        body.has-custom-bg .shortcut-item:hover .shortcut-char {
+            color: #fff !important;
+            -webkit-text-fill-color: #fff !important;
+        }
+        body.has-custom-bg .custom-title-text,
+        body.has-custom-bg #timeDisplay {
+            text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+        }
+        .bg-mode-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            background: var(--glass-bg-subtle);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 4px;
+        }
+        body.dark .bg-mode-tabs,
+        body:not(.light):not(.dark) .bg-mode-tabs {
+            background: var(--glass-bg-subtle);
+        }
+        .bg-mode-tab {
+            flex: 1;
+            padding: 8px 0;
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            user-select: none;
+        }
+        body.dark .bg-mode-tab,
+        body:not(.light):not(.dark) .bg-mode-tab {
+            color: var(--text-secondary);
+        }
+        .bg-mode-tab.active {
+            background: var(--glass-bg-strong);
+            color: #165DFF;
+            font-weight: 500;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        body.dark .bg-mode-tab.active,
+        body:not(.light):not(.dark) .bg-mode-tab.active {
+            background: var(--glass-bg-strong);
+            color: #4080ff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        .file-upload-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 44px;
+            border: 1px dashed var(--glass-border);
+            border-radius: 8px;
+            font-size: 15px;
+            color: #165DFF;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        body.dark .file-upload-btn,
+        body:not(.light):not(.dark) .file-upload-btn {
+            border-color: var(--glass-border);
+            color: #4080ff;
+        }
+        .file-upload-btn:hover {
+            border-color: #165DFF;
+            background: rgba(22, 93, 255, 0.08);
+        }
+        .file-upload-input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            overflow: hidden;
+        }
+        .file-upload-name {
+            margin-top: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-align: center;
+            word-break: break-all;
+        }
+        .add-input-group.hidden {
+            display: none;
+        }
+        /* ========== 大胆动态效果 ========== */
+        .particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.6;
+        }
+        .gradient-blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: -2;
+            opacity: 0.5;
+            will-change: transform;
+        }
+        .blob-1 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(22,93,255,0.35) 0%, transparent 70%);
+            top: -200px;
+            right: -150px;
+            animation: blobFloat1 20s ease-in-out infinite;
+        }
+        .blob-2 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(120,80,255,0.3) 0%, transparent 70%);
+            bottom: -150px;
+            left: -100px;
+            animation: blobFloat2 25s ease-in-out infinite;
+        }
+        .blob-3 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(0,200,255,0.25) 0%, transparent 70%);
+            top: 40%;
+            left: 30%;
+            animation: blobFloat3 22s ease-in-out infinite;
+        }
+        body.dark .blob-1,
+        body:not(.light):not(.dark) .blob-1 {
+            background: radial-gradient(circle, rgba(64,128,255,0.4) 0%, transparent 70%);
+        }
+        body.dark .blob-2,
+        body:not(.light):not(.dark) .blob-2 {
+            background: radial-gradient(circle, rgba(150,100,255,0.35) 0%, transparent 70%);
+        }
+        body.dark .blob-3,
+        body:not(.light):not(.dark) .blob-3 {
+            background: radial-gradient(circle, rgba(0,220,255,0.3) 0%, transparent 70%);
+        }
+        @keyframes blobFloat1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(80px, 60px) scale(1.15); }
+            66% { transform: translate(-40px, 100px) scale(0.95); }
+        }
+        @keyframes blobFloat2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-60px, -80px) scale(1.1); }
+            66% { transform: translate(100px, -40px) scale(0.9); }
+        }
+        @keyframes blobFloat3 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(120px, -60px) scale(1.2); }
+        }
+        /* 入场动画 */
+        .menu-btn {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .menu-btn.intro {
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: dropIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s forwards;
+        }
+        #exploreTitle {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        #exploreTitle.intro {
+            opacity: 0;
+            transform: translateY(30px) scale(0.9);
+            animation: titleReveal 1s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+        }
+        .title-time.hidden {
+            display: none;
+        }
+        .title-time.show {
+            display: block;
+        }
+        @keyframes titleReveal {
+            0% { opacity: 0; transform: translateY(30px) scale(0.9) rotateX(15deg); filter: blur(10px); }
+            100% { opacity: 1; transform: translateY(0) scale(1) rotateX(0); filter: blur(0); }
+        }
+        .custom-title-text {
+            background: linear-gradient(90deg, #165DFF, #7c4dff, #00c8ff, #165DFF);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientFlow 6s linear infinite;
+        }
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
+        .search-box {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .search-box.intro {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards;
+        }
+        .shortcut-box {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .shortcut-box.intro {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.7s forwards;
+        }
+        @keyframes slideUp {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes dropIn {
+            0% { opacity: 0; transform: translateY(-20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        /* 搜索框发光脉冲 */
+        .search-input {
+            transition: box-shadow 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: searchGlow 3s ease-in-out infinite;
+        }
+        @keyframes searchGlow {
+            0%, 100% { box-shadow: 0 3px 15px rgba(0,0,0,0.08); }
+            50% { box-shadow: 0 3px 25px rgba(22, 93, 255, 0.15); }
+        }
+        .search-input:focus {
+            animation: none;
+            box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.15), 0 8px 30px rgba(22, 93, 255, 0.25);
+            transform: scale(1.03);
+        }
+        body.dark .search-input,
+        body:not(.light):not(.dark) .search-input {
+            animation: searchGlowDark 3s ease-in-out infinite;
+        }
+        @keyframes searchGlowDark {
+            0%, 100% { box-shadow: 0 3px 15px rgba(0,0,0,0.3); }
+            50% { box-shadow: 0 3px 25px rgba(64, 128, 255, 0.25); }
+        }
+        body.dark .search-input:focus,
+        body:not(.light):not(.dark) .search-input:focus {
+            box-shadow: 0 0 0 3px rgba(64, 128, 255, 0.2), 0 8px 30px rgba(64, 128, 255, 0.3);
+        }
+        /* 快捷方式 3D 卡片 */
+        .shortcut-wrap {
+            perspective: 1000px;
+            opacity: 0;
+            transform: scale(0.5) translateY(40px);
+            animation: cardPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .shortcut-wrap:nth-child(1) { animation-delay: 0.8s; }
+        .shortcut-wrap:nth-child(2) { animation-delay: 0.88s; }
+        .shortcut-wrap:nth-child(3) { animation-delay: 0.96s; }
+        .shortcut-wrap:nth-child(4) { animation-delay: 1.04s; }
+        .shortcut-wrap:nth-child(5) { animation-delay: 1.12s; }
+        .shortcut-wrap:nth-child(6) { animation-delay: 1.2s; }
+        .shortcut-wrap:nth-child(7) { animation-delay: 1.28s; }
+        .shortcut-wrap:nth-child(8) { animation-delay: 1.36s; }
+        @keyframes cardPop {
+            0% { opacity: 0; transform: scale(0.5) translateY(40px); }
+            60% { transform: scale(1.1) translateY(-5px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .shortcut-item {
+            transform-style: preserve-3d;
+            transition: transform 0.15s ease-out, box-shadow 0.3s ease;
+        }
+        .shortcut-item::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .shortcut-item:hover::before {
+            opacity: 1;
+        }
+        .shortcut-item:hover {
+            box-shadow: 0 15px 35px rgba(22, 93, 255, 0.2);
+        }
+        .shortcut-char {
+            background: linear-gradient(135deg, #165DFF, #7c4dff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: transform 0.3s ease;
+        }
+        .shortcut-item:hover .shortcut-char {
+            transform: translateZ(20px) scale(1.1);
+        }
+        .add-shortcut-btn {
+            opacity: 0;
+            animation: cardPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 1.4s forwards;
+        }
+        /* 按钮涟漪 */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(22, 93, 255, 0.3);
+            transform: scale(0);
+            animation: rippleEffect 0.6s ease-out;
+            pointer-events: none;
+        }
+        @keyframes rippleEffect {
+            to { transform: scale(4); opacity: 0; }
+        }
+        /* 菜单项错开动画 */
+        .menu-popup {
+            transform-origin: top left;
+            transition: opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1), transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .menu-main, .sub-item {
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease, background 0.2s;
+        }
+        .menu-popup.show .menu-main,
+        .menu-popup.show .sub-item {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .menu-popup.show .menu-main:nth-child(1) { transition-delay: 0.05s; }
+        .menu-popup.show .menu-main:nth-child(2) { transition-delay: 0.1s; }
+        .menu-popup.show #settingSub .sub-item:nth-child(1) { transition-delay: 0.08s; }
+        .menu-popup.show #settingSub .sub-item:nth-child(2) { transition-delay: 0.12s; }
+        .menu-popup.show #settingSub .sub-item:nth-child(3) { transition-delay: 0.16s; }
+        .menu-popup.show #settingSub .sub-item:nth-child(4) { transition-delay: 0.2s; }
+        .menu-popup.show #settingSub .sub-item:nth-child(5) { transition-delay: 0.24s; }
+        .menu-popup.show #settingSub .sub-item:nth-child(6) { transition-delay: 0.28s; }
+        .menu-popup.show #timeSub .sub-item:nth-child(1) { transition-delay: 0.1s; }
+        .menu-popup.show #timeSub .sub-item:nth-child(2) { transition-delay: 0.14s; }
+        .menu-main:hover, .sub-item:hover {
+            transform: translateX(8px);
+        }
+        /* 弹窗增强 */
+        .add-shortcut-box, .about-box, .custom-dialog-box {
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease;
+        }
+        /* 引擎面板 */
+        .engine-panel {
+            transform-origin: top right;
+        }
+        .engine-item {
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s;
+        }
+        .engine-panel.show .engine-item {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .engine-panel.show .engine-item:nth-child(1) { transition-delay: 0.04s; }
+        .engine-panel.show .engine-item:nth-child(2) { transition-delay: 0.08s; }
+        .engine-panel.show .engine-item:nth-child(3) { transition-delay: 0.12s; }
+        .engine-panel.show .engine-item:nth-child(4) { transition-delay: 0.16s; }
+        .engine-panel.show .engine-item:nth-child(5) { transition-delay: 0.2s; }
+        /* 时间显示 */
+        #timeDisplay {
+            background: linear-gradient(90deg, #165DFF, #7c4dff, #00c8ff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientFlow 4s linear infinite;
+            text-shadow: none !important;
+        }
+        /* 开关弹性动画 */
+        .switch {
+            transition: background 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .switch::after {
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        /* 磁吸按钮 */
+        .menu-btn, .engine-toggle, .add-shortcut-btn, .shortcut-item {
+            transition: transform 0.15s ease-out, box-shadow 0.3s ease, background 0.2s ease;
+        }
+        /* 滚动显示 */
+        .search-record.show, .search-suggest.show {
+            animation: listReveal 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes listReveal {
+            0% { opacity: 0; transform: translateY(-10px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        /* 减弱动画效果 */
+        body.reduce-motion .particle-canvas,
+        body.reduce-motion .gradient-blob {
+            display: none !important;
+        }
+        body.reduce-motion .shortcut-wrap,
+        body.reduce-motion .add-shortcut-btn,
+        body.reduce-motion .search-box,
+        body.reduce-motion .title-time,
+        body.reduce-motion #exploreTitle,
+        body.reduce-motion .custom-title-text,
+        body.reduce-motion .menu-popup,
+        body.reduce-motion .engine-panel,
+        body.reduce-motion .search-record,
+        body.reduce-motion .search-suggest,
+        body.reduce-motion .settings-modal,
+        body.reduce-motion .add-shortcut-box,
+        body.reduce-motion .about-box,
+        body.reduce-motion .custom-dialog-box,
+        body.reduce-motion .search-input,
+        body.reduce-motion .engine-toggle,
+        body.reduce-motion .menu-btn,
+        body.reduce-motion .shortcut-item,
+        body.reduce-motion .ripple,
+        body.reduce-motion .bg-overlay,
+        body.reduce-motion .record-item,
+        body.reduce-motion .suggest-item {
+            animation: none !important;
+        }
+        body.reduce-motion .menu-btn,
+        body.reduce-motion .engine-toggle,
+        body.reduce-motion .shortcut-item,
+        body.reduce-motion .add-shortcut-btn,
+        body.reduce-motion .add-btn-confirm,
+        body.reduce-motion .add-btn-cancel,
+        body.reduce-motion .about-close,
+        body.reduce-motion .settings-close,
+        body.reduce-motion .settings-item,
+        body.reduce-motion .menu-main,
+        body.reduce-motion .sub-item {
+            transition-duration: 0.12s !important;
+        }
+        body.reduce-motion .menu-btn:hover,
+        body.reduce-motion .engine-toggle:hover,
+        body.reduce-motion .shortcut-item:hover,
+        body.reduce-motion .add-shortcut-btn:hover,
+        body.reduce-motion .add-btn-confirm:hover,
+        body.reduce-motion .add-btn-cancel:hover,
+        body.reduce-motion .about-close:hover,
+        body.reduce-motion .settings-close:hover,
+        body.reduce-motion .menu-main:hover,
+        body.reduce-motion .sub-item:hover {
+            transform: none !important;
+        }
+        body.reduce-motion .search-input:focus {
+            transform: none !important;
+        }
+        body.reduce-motion .shortcut-wrap {
+            opacity: 1 !important;
+            transform: none !important;
+        }
+        body.reduce-motion .add-shortcut-btn {
+            opacity: 1 !important;
+            transform: none !important;
+        }
+        body.reduce-motion .menu-btn,
+        body.reduce-motion .search-box,
+        body.reduce-motion .shortcut-box,
+        body.reduce-motion .title-time,
+        body.reduce-motion #exploreTitle,
+        body.reduce-motion .custom-title-text {
+            opacity: 1 !important;
+            transform: none !important;
+        }
+        body.reduce-motion .record-item,
+        body.reduce-motion .suggest-item {
+            opacity: 1 !important;
+            transform: none !important;
+        }
+        .record-item, .suggest-item {
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s;
+        }
+        .search-record.show .record-item,
+        .search-suggest.show .suggest-item {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .search-record.show .record-item:nth-child(1) { transition-delay: 0.02s; }
+        .search-record.show .record-item:nth-child(2) { transition-delay: 0.04s; }
+        .search-record.show .record-item:nth-child(3) { transition-delay: 0.06s; }
+        .search-record.show .record-item:nth-child(4) { transition-delay: 0.08s; }
+        .search-record.show .record-item:nth-child(5) { transition-delay: 0.1s; }
+        .search-suggest.show .suggest-item:nth-child(1) { transition-delay: 0.02s; }
+        .search-suggest.show .suggest-item:nth-child(2) { transition-delay: 0.04s; }
+        .search-suggest.show .suggest-item:nth-child(3) { transition-delay: 0.06s; }
+        .search-suggest.show .suggest-item:nth-child(4) { transition-delay: 0.08s; }
+        .search-suggest.show .suggest-item:nth-child(5) { transition-delay: 0.1s; }
+        /* 保守美化 */
+        .menu-popup, .engine-panel, .search-record, .search-suggest,
+        .add-shortcut-box, .about-box, .custom-dialog-box {
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        body.dark .menu-popup, body.dark .engine-panel, body.dark .search-record, body.dark .search-suggest,
+        body.dark .add-shortcut-box, body.dark .about-box, body.dark .custom-dialog-box,
+        body:not(.light):not(.dark) .menu-popup, body:not(.light):not(.dark) .engine-panel,
+        body:not(.light):not(.dark) .search-record, body:not(.light):not(.dark) .search-suggest,
+        body:not(.light):not(.dark) .add-shortcut-box, body:not(.light):not(.dark) .about-box,
+        body:not(.light):not(.dark) .custom-dialog-box {
+            border-color: rgba(255,255,255,0.06);
+        }
+        .menu-btn, .search-input, .engine-toggle, .shortcut-item, .add-shortcut-btn {
+            border-radius: 16px;
+        }
+        .menu-popup, .engine-panel, .search-record, .search-suggest,
+        .add-shortcut-box, .about-box, .custom-dialog-box {
+            border-radius: 16px;
+        }
+        .search-box {
+            filter: drop-shadow(0 4px 20px rgba(0,0,0,0.05));
+        }
+        body.dark .search-box,
+        body:not(.light):not(.dark) .search-box {
+            filter: drop-shadow(0 4px 20px rgba(0,0,0,0.2));
+        }
+        .shortcut-item {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+        }
+        .title-time {
+            text-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        body.dark .title-time,
+        body:not(.light):not(.dark) .title-time {
+            text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        @media (max-width: 400px) {
+            .custom-title-text {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-overlay" id="bgOverlay"></div>
+    <canvas class="particle-canvas" id="particleCanvas"></canvas>
+    <div class="gradient-blob blob-1"></div>
+    <div class="gradient-blob blob-2"></div>
+    <div class="gradient-blob blob-3"></div>
+    <button class="menu-btn intro liquid-glass" id="menuBtn"><i class="fas fa-bars"></i></button>
+    <div class="menu-popup" id="menuPopup">
+        <div class="menu-main" id="settingBtn"><i class="fas fa-cog"></i> 设置</div>
+        <div class="menu-main" id="aboutBtn"><i class="fas fa-info-circle"></i> 关于</div>
+    </div>
+    <div class="settings-modal-mask" id="settingsModalMask">
+        <div class="settings-modal" id="settingsModal">
+            <div class="settings-header">
+                <div class="settings-title">设置</div>
+                <button class="settings-close" id="settingsClose"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="settings-body" id="settingSub">
+                <div class="settings-section">
+                    <div class="settings-section-title">通用</div>
+                    <div class="settings-item" id="themeToggle">
+                        <div class="settings-item-info">
+                            <div class="settings-item-name"><i class="fas fa-moon"></i> 深色模式</div>
+                            <div class="settings-item-desc">天黑了！</div>
+                        </div>
+                        <div class="switch-container">
+                            <div class="switch" id="themeSwitch"></div>
+                            <div class="switch-hit-area" data-target="themeSwitch"></div>
+                        </div>
+                    </div>
+                    <div class="settings-item" id="titleToggle">
+                        <div class="settings-item-info">
+                            <div class="settings-item-name"><i class="fas fa-heading"></i> 显示图标/标题</div>
+                            <div class="settings-item-desc">在搜索框上方显示图标/标题</div>
+                        </div>
+                        <div class="switch-container">
+                            <div class="switch" id="titleSwitch"></div>
+                            <div class="switch-hit-area" data-target="titleSwitch"></div>
+                        </div>
+                    </div>
+                    <div class="settings-item" id="timeToggle">
+                        <div class="settings-item-info">
+                            <div class="settings-item-name"><i class="fas fa-clock"></i> 显示时间</div>
+                            <div class="settings-item-desc">在图标下方显示当前时间</div>
+                        </div>
+                        <div class="switch-container">
+                            <div class="switch" id="timeSwitch"></div>
+                            <div class="switch-hit-area" data-target="timeSwitch"></div>
+                        </div>
+                    </div>
+                    <div class="settings-sub" id="timeSub">
+                        <div class="settings-item" id="hour12Toggle">
+                            <div class="settings-item-info">
+                                <div class="settings-item-name">12小时制</div>
+                            </div>
+                            <div class="switch-container">
+                                <div class="switch" id="hour12Switch"></div>
+                                <div class="switch-hit-area" data-target="hour12Switch"></div>
+                            </div>
+                        </div>
+                        <div class="settings-item" id="secondToggle">
+                            <div class="settings-item-info">
+                                <div class="settings-item-name">显示秒钟</div>
+                            </div>
+                            <div class="switch-container">
+                                <div class="switch" id="secondSwitch"></div>
+                                <div class="switch-hit-area" data-target="secondSwitch"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-item" id="reduceMotionToggle">
+                        <div class="settings-item-info">
+                            <div class="settings-item-name"><i class="fas fa-feather"></i> 减弱动画</div>
+                            <div class="settings-item-desc">关闭粒子、光晕与复杂动效（低性能设备推荐）</div>
+                        </div>
+                        <div class="switch-container">
+                            <div class="switch" id="reduceMotionSwitch"></div>
+                            <div class="switch-hit-area" data-target="reduceMotionSwitch"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <div class="settings-section-title">个性化</div>
+                    <div class="settings-item" id="customTitleToggle">
+                        <div class="settings-item-info">
+                            <div class="settings-item-name"><i class="fas fa-pen"></i> 自定义标题</div>
+                            <div class="settings-item-desc">替换默认图标</div>
+                        </div>
+                        <span class="settings-arrow"><i class="fas fa-chevron-right"></i></span>
+                    </div>
+                    <div class="settings-item" id="customBgToggle">
+                        <div class="settings-item-info">
+                            <div class="settings-item-name"><i class="fas fa-image"></i> 自定义背景</div>
+                            <div class="settings-item-desc">设置 URL 或上传本地图片</div>
+                        </div>
+                        <span class="settings-arrow"><i class="fas fa-chevron-right"></i></span>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <div class="settings-section-title">其他</div>
+                    <div class="settings-item" id="recordToggle">
+                        <div class="settings-item-info">
+                            <div class="settings-item-name"><i class="fas fa-history"></i> 搜索记录</div>
+                            <div class="settings-item-desc">小心被其他人看见...</div>
+                        </div>
+                        <div class="switch-container">
+                            <div class="switch" id="recordSwitch"></div>
+                            <div class="switch-hit-area" data-target="recordSwitch"></div>
+                        </div>
+                    </div>
+                    <div class="settings-item" id="exportSettingsToggle">
+                        <div class="settings-item-info">
+                            <div class="settings-item-name"><i class="fas fa-file-export"></i> 导出设置</div>
+                            <div class="settings-item-desc">将所有设置保存为 JSON 文件</div>
+                        </div>
+                        <span class="settings-arrow"><i class="fas fa-chevron-right"></i></span>
+                    </div>
+                    <div class="settings-item" id="importSettingsToggle">
+                        <div class="settings-item-info">
+                            <div class="settings-item-name"><i class="fas fa-file-import"></i> 导入设置</div>
+                            <div class="settings-item-desc">从 JSON 文件恢复设置</div>
+                        </div>
+                        <span class="settings-arrow"><i class="fas fa-chevron-right"></i></span>
+                    </div>
+                    <input type="file" id="importSettingsFile" accept=".json,application/json" style="display:none">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="about-mask" id="aboutMask">
+        <div class="about-box">
+            <div class="about-version">版本号：v1.2.0</div>
+            <p class="about-text">作者：弘九honjiu</p>
+            <p class="about-copyright">© 2025-2026 弘九honjiu All rights reserved.</p>
+            <button class="about-close" id="aboutClose">关闭</button>
+        </div>
+    </div>
+    <div class="add-shortcut-mask" id="customTitleMask">
+        <div class="add-shortcut-box custom-dialog-box">
+            <div class="add-shortcut-title">自定义标题</div>
+            <div class="add-input-group">
+                <label class="add-input-label">标题文字（留空恢复默认）</label>
+                <input type="text" class="add-input" id="customTitleInput" placeholder="请输入标题文字" maxlength="10">
+            </div>
+            <div class="add-btn-group">
+                <button class="add-btn-cancel" id="customTitleCancel">取消</button>
+                <button class="add-btn-confirm" id="customTitleConfirm">保存</button>
+            </div>
+        </div>
+    </div>
+    <div class="add-shortcut-mask" id="customBgMask">
+        <div class="add-shortcut-box custom-dialog-box">
+            <div class="add-shortcut-title">自定义背景</div>
+            <div class="bg-mode-tabs" id="customBgModeTabs">
+                <div class="bg-mode-tab active" data-mode="url">图片链接</div>
+                <div class="bg-mode-tab" data-mode="file">本地上传</div>
+            </div>
+            <div class="add-input-group" id="customBgUrlGroup">
+                <label class="add-input-label">背景图片URL（留空恢复默认）</label>
+                <input type="text" class="add-input" id="customBgInput" placeholder="请输入图片地址">
+            </div>
+            <div class="add-input-group hidden" id="customBgFileGroup">
+                <label class="add-input-label">从本地选择图片</label>
+                <label class="file-upload-btn" for="customBgFileInput">选择文件</label>
+                <input type="file" class="file-upload-input" id="customBgFileInput" accept="image/*">
+                <div class="file-upload-name" id="customBgFileName">未选择文件</div>
+            </div>
+            <div class="add-btn-group">
+                <button class="add-btn-cancel" id="customBgCancel">取消</button>
+                <button class="add-btn-confirm" id="customBgConfirm">保存</button>
+            </div>
+        </div>
+    </div>
+    <div class="add-shortcut-mask" id="addShortcutMask">
+        <div class="add-shortcut-box">
+            <div class="add-shortcut-title">添加快捷方式</div>
+            <div class="add-input-group">
+                <label class="add-input-label">网站名称</label>
+                <input type="text" class="add-input" id="shortcutName" placeholder="请输入网站名称">
+            </div>
+            <div class="add-input-group">
+                <label class="add-input-label">网站网址</label>
+                <input type="text" class="add-input" id="shortcutUrl" placeholder="请输入网站网址（无需http/https）">
+            </div>
+            <div class="add-btn-group">
+                <button class="add-btn-cancel" id="addShortcutCancel">取消</button>
+                <button class="add-btn-confirm" id="addShortcutConfirm">添加</button>
+            </div>
+        </div>
+    </div>
+    <h1 class="title-time intro" id="exploreTitle">
+        <img src="https://s41.ax1x.com/2026/05/28/pmFCZy8.png" alt="Stariver">
+    </h1>
+    <div class="title-time hidden" id="timeDisplay"></div>
+    <div class="search-box intro" id="searchBox">
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索或输入网址...">
+        <button class="engine-toggle liquid-glass" id="engineToggle">必应 <span style="font-size:12px;">▼</span></button>
+        <div class="engine-panel" id="enginePanel">
+            <button class="engine-item" data-engine="baidu">百度</button>
+            <button class="engine-item" data-engine="bing">必应</button>
+            <button class="engine-item" data-engine="sogou">搜狗</button>
+            <button class="engine-item" data-engine="google">Google</button>
+            <button class="engine-item" data-engine="360">360</button>
+        </div>
+        <div class="search-record" id="searchRecord">
+            <div class="record-header">
+                <span class="record-title">搜索记录</span>
+                <button class="clear-all" id="clearAll">清空全部</button>
+            </div>
+            <div class="record-list" id="recordList"></div>
+        </div>
+        <!-- 搜索联想面板 -->
+        <div class="search-suggest" id="searchSuggest"></div>
+    </div>
+    <div class="shortcut-box intro" id="shortcutBox">
+        <button class="add-shortcut-btn liquid-glass" id="addShortcutBtn">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
+    <script>
+        // ==================== 安全工具函数 ====================
+        const escapeHtml = (text) => {
+            if (!text) return '';
+            return text.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+                return c;
+            });
+        };
+        const isSafeUrl = (url) => {
+            if (!url) return false;
+            const lowerUrl = url.toLowerCase();
+            if (lowerUrl.startsWith('http://') || lowerUrl.startsWith('https://')) {
+                return true;
+            }
+            if (!lowerUrl.includes('://')) {
+                return true;
+            }
+            return false;
+        };
+        const sanitizeUrl = (url) => {
+            if (!url) return '';
+            let trimmed = url.trim();
+            if (!trimmed) return '';
+            if (!trimmed.startsWith('http')) {
+                trimmed = 'https://' + trimmed;
+            }
+            if (!isSafeUrl(trimmed)) {
+                return '';
+            }
+            return trimmed;
+        };
+        const safeJSONParse = (str, defaultValue = []) => {
+            try {
+                const parsed = JSON.parse(str);
+                return Array.isArray(parsed) ? parsed : defaultValue;
+            } catch (e) {
+                return defaultValue;
+            }
+        };
+        // ==================== DOM 元素绑定 ====================
+        const el = (id) => document.getElementById(id);
+        const [
+            menuBtn, menuPopup, settingBtn, settingSub, timeSub,
+            aboutBtn, aboutMask, aboutClose, exploreTitle, timeDisplay,
+            engineToggle, enginePanel, searchInput, searchBox, themeSwitch,
+            titleSwitch, timeSwitch, hour12Switch, secondSwitch,
+            themeToggle, titleToggle, timeToggle, hour12Toggle, secondToggle,
+            recordToggle, recordSwitch, reduceMotionToggle, reduceMotionSwitch,
+            searchRecord, recordList, clearAll,
+            shortcutBox, addShortcutBtn, addShortcutMask, addShortcutCancel,
+            addShortcutConfirm, shortcutName, shortcutUrl, searchSuggest,
+            settingsModalMask, settingsClose, customTitleToggle, customBgToggle,
+            exportSettingsToggle, importSettingsToggle, importSettingsFile
+        ] = [
+            el('menuBtn'), el('menuPopup'), el('settingBtn'), el('settingSub'), el('timeSub'),
+            el('aboutBtn'), el('aboutMask'), el('aboutClose'), el('exploreTitle'), el('timeDisplay'),
+            el('engineToggle'), el('enginePanel'), el('searchInput'), el('searchBox'), el('themeSwitch'),
+            el('titleSwitch'), el('timeSwitch'), el('hour12Switch'), el('secondSwitch'),
+            el('themeToggle'), el('titleToggle'), el('timeToggle'), el('hour12Toggle'), el('secondToggle'),
+            el('recordToggle'), el('recordSwitch'), el('reduceMotionToggle'), el('reduceMotionSwitch'),
+            el('searchRecord'), el('recordList'), el('clearAll'),
+            el('shortcutBox'), el('addShortcutBtn'), el('addShortcutMask'), el('addShortcutCancel'),
+            el('addShortcutConfirm'), el('shortcutName'), el('shortcutUrl'), el('searchSuggest'),
+            el('settingsModalMask'), el('settingsClose'), el('customTitleToggle'), el('customBgToggle'),
+            el('exportSettingsToggle'), el('importSettingsToggle'), el('importSettingsFile')
+        ];
+        const engineItems = document.querySelectorAll('.engine-item');
+        const switchHitAreas = document.querySelectorAll('.switch-hit-area');
+        const body = document.body;
+        const engineMap = {
+            baidu: 'https://www.baidu.com/s?wd=',
+            bing: 'https://cn.bing.com/search?q=',
+            sogou: 'https://www.sogou.com/web?query=',
+            google: 'https://www.google.com/search?q=',
+            360: 'https://www.so.com/s?q='
+        };
+        const engineName = {
+            baidu: '百度',
+            bing: '必应',
+            sogou: '搜狗',
+            google: 'Google',
+            360: '360'
+        };
+        // 搜索引擎联想API配置
+        const suggestApi = {
+            baidu: {
+                url: 'https://suggestion.baidu.com/su',
+                params: { wd: '' },
+                callback: 'cb',
+                parse: (data) => data.s || []
+            },
+            bing: {
+                url: 'https://api.bing.com/osjson.aspx',
+                params: { query: '' },
+                callback: 'jsonp',
+                parse: (data) => data[1] || []
+            },
+            sogou: {
+                url: 'https://sug.so.360.cn/suggest',
+                params: { word: '', encodein: 'utf-8', encodeout: 'utf-8' },
+                callback: 'callback',
+                parse: (data) => data.s || []
+            },
+            google: {
+                url: 'https://suggestqueries.google.com/complete/search',
+                params: { client: 'firefox', q: '' },
+                callback: 'callback',
+                parse: (data) => data[1] || []
+            },
+            360: {
+                url: 'https://sug.so.360.cn/suggest',
+                params: { word: '', encodein: 'utf-8', encodeout: 'utf-8' },
+                callback: 'callback',
+                parse: (data) => data.s || []
+            }
+        };
+        let currentEngine = localStorage.getItem('lastSearchEngine') || 'bing';
+        const RECORD_KEY = 'searchHistoryList';
+        const MAX_RECORD = 20;
+        let timeTimer = null;
+        let timeConfig = {
+            is12: false,
+            isShowS: false
+        };
+        // 搜索联想相关变量
+        let suggestTimer = null;
+        let currentScript = null;
+        const SUGGEST_DELAY = 200; // 联想请求延迟(ms)
+        // ==================== 快捷方式逻辑 (安全修复) ====================
+        const SHORTCUT_KEY = 'customShortcutList';
+        const MAX_SHORTCUT = 8;
+        const getShortcutList = () => {
+            const raw = localStorage.getItem(SHORTCUT_KEY);
+            const list = safeJSONParse(raw, []);
+            return list.filter(item => item && item.name && item.url && isSafeUrl(item.url));
+        };
+        const saveShortcutList = (list) => {
+            localStorage.setItem(SHORTCUT_KEY, JSON.stringify(list.slice(0, MAX_SHORTCUT)));
+        };
+        const getFirstChar = (name) => {
+            if (!name) return '?';
+            const first = name.trim().charAt(0).toUpperCase();
+            return first || '?';
+        };
+        const updateAddButtonVisibility = () => {
+            const list = getShortcutList();
+            addShortcutBtn.classList.toggle('hidden', list.length >= MAX_SHORTCUT);
+        };
+        const renderShortcutList = () => {
+            const list = getShortcutList();
+            const wraps = shortcutBox.querySelectorAll('.shortcut-wrap');
+            wraps.forEach(wrap => wrap.remove());
+            const addBtn = shortcutBox.querySelector('.add-shortcut-btn');
+            
+            list.forEach((item, idx) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'shortcut-wrap';
+                wrap.dataset.shortcutId = item.id;
+                wrap.style.setProperty('--index', idx);
+                
+                const link = document.createElement('a');
+                link.className = 'shortcut-item';
+                link.href = sanitizeUrl(item.url);
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                
+                const deleteDiv = document.createElement('div');
+                deleteDiv.className = 'shortcut-delete';
+                deleteDiv.dataset.id = item.id;
+                const delIcon = document.createElement('i');
+                delIcon.className = 'fas fa-times';
+                deleteDiv.appendChild(delIcon);
+                
+                const charSpan = document.createElement('span');
+                charSpan.className = 'shortcut-char';
+                charSpan.textContent = getFirstChar(item.name);
+                
+                link.appendChild(deleteDiv);
+                link.appendChild(charSpan);
+                
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'shortcut-name';
+                nameDiv.textContent = item.name;
+                
+                wrap.appendChild(link);
+                wrap.appendChild(nameDiv);
+                shortcutBox.insertBefore(wrap, addBtn);
+            });
+            
+            updateAddButtonVisibility();
+            initTiltCards();
+        };
+        const addShortcut = () => {
+            let name = shortcutName.value.trim();
+            let url = shortcutUrl.value.trim();
+            if (!name) {
+                alert('请输入网站名称');
+                shortcutName.focus();
+                return;
+            }
+            if (!url) {
+                alert('请输入网站地址');
+                shortcutUrl.focus();
+                return;
+            }
+            const safeUrl = sanitizeUrl(url);
+            if (!safeUrl) {
+                alert('请输入有效的网址');
+                shortcutUrl.focus();
+                return;
+            }
+            const list = getShortcutList();
+            if (list.length >= MAX_SHORTCUT) {
+                alert(`快捷方式数量已达到上限`);
+                return;
+            }
+            const newShortcut = {
+                id: Date.now().toString(),
+                name: name,
+                url: safeUrl
+            };
+            list.push(newShortcut);
+            saveShortcutList(list);
+            renderShortcutList();
+            closeAddShortcutModal();
+        };
+        const handleShortcutDelete = (e) => {
+            const deleteBtn = e.target.closest('.shortcut-delete');
+            if (!deleteBtn) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const id = deleteBtn.dataset.id;
+            let list = getShortcutList();
+            list = list.filter(item => item.id !== id);
+            saveShortcutList(list);
+            renderShortcutList();
+        };
+        const openAddShortcutModal = () => {
+            addShortcutMask.classList.add('show');
+            shortcutName.value = '';
+            shortcutUrl.value = '';
+            shortcutName.focus();
+            [menuPopup, settingSub, timeSub, searchRecord, enginePanel, searchSuggest].forEach(i => i?.classList.remove('show'));
+            if (settingBtn) {
+                const icon = settingBtn.querySelector('i');
+                if (icon) icon.style.transform = '';
+            }
+        };
+        const closeAddShortcutModal = () => {
+            addShortcutMask.classList.remove('show');
+        };
+        // ==================== 时间与标题逻辑 ====================
+        const updateTime = () => {
+            if (!timeDisplay) return;
+            const now = new Date();
+            let h = now.getHours();
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            let period = '';
+            if (timeConfig.is12) {
+                period = h >= 12 ? ' PM' : ' AM';
+                h = h % 12 || 12;
+            }
+            h = String(h).padStart(2, '0');
+            timeDisplay.textContent = `${h}:${m}${timeConfig.isShowS ? `:${s}` : ''}${period}`;
+        };
+        const startTimer = () => {
+            stopTimer();
+            if (!timeSwitch.classList.contains('checked')) return;
+            updateTime();
+            const interval = timeConfig.isShowS ? 1000 : 60000;
+            timeTimer = setInterval(updateTime, interval);
+        };
+        const stopTimer = () => {
+            if (timeTimer) {
+                clearInterval(timeTimer);
+                timeTimer = null;
+            }
+        };
+        const restartTimer = () => {
+            if (timeSwitch.classList.contains('checked')) startTimer();
+        };
+        // ==================== 搜索记录（XSS 修复） ====================
+        const saveSearchRecord = (content) => {
+            const isSave = localStorage.getItem('isSaveRecord') !== 'false';
+            if (!isSave) return;
+            let history = safeJSONParse(localStorage.getItem(RECORD_KEY), []);
+            history = history.filter(item => item !== content);
+            history.unshift(content);
+            if (history.length > MAX_RECORD) history.pop();
+            localStorage.setItem(RECORD_KEY, JSON.stringify(history));
+            renderRecordList();
+        };
+        const renderRecordList = (query = '') => {
+            if (!recordList) return;
+            let history = safeJSONParse(localStorage.getItem(RECORD_KEY), []);
+            if (query) {
+                history = history.filter(item => fuzzyMatch(query, item));
+            }
+            recordList.innerHTML = '';
+            if (history.length === 0) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'record-empty';
+                emptyDiv.textContent = query ? '无匹配搜索记录' : '暂无搜索记录';
+                recordList.appendChild(emptyDiv);
+                return;
+            }
+            history.forEach(item => {
+                const wrap = document.createElement('div');
+                wrap.className = 'record-item';
+                wrap.dataset.value = item;
+                const textSpan = document.createElement('span');
+                textSpan.innerHTML = query ? highlightFuzzy(query, item) : escapeHtml(item);
+                const delIcon = document.createElement('i');
+                delIcon.className = 'fas fa-times delete-record';
+                wrap.appendChild(textSpan);
+                wrap.appendChild(delIcon);
+                recordList.appendChild(wrap);
+            });
+        };
+        const clearAllRecord = () => {
+            if (confirm('你真的要清空搜索记录吗？它将会永久消失（真的很久！）')) {
+                localStorage.removeItem(RECORD_KEY);
+                renderRecordList();
+            }
+        };
+        const handleRecordClick = (e) => {
+            if (e.target.classList.contains('delete-record')) {
+                e.stopPropagation();
+                const wrap = e.target.closest('.record-item');
+                if (wrap) {
+                    const val = wrap.dataset.value;
+                    let hist = safeJSONParse(localStorage.getItem(RECORD_KEY), []);
+                    hist = hist.filter(i => i !== val);
+                    localStorage.setItem(RECORD_KEY, JSON.stringify(hist));
+                    renderRecordList();
+                }
+                return;
+            }
+            const wrap = e.target.closest('.record-item');
+            if (wrap && wrap.dataset.value) {
+                const val = wrap.dataset.value;
+                searchInput.value = val;
+                doSearch(val);
+                searchRecord.classList.remove('show');
+            }
+        };
+        // ==================== 搜索联想功能 ====================
+        const clearSuggestTimer = () => {
+            if (suggestTimer) {
+                clearTimeout(suggestTimer);
+                suggestTimer = null;
+            }
+        };
+        const removeCurrentScript = () => {
+            if (currentScript && currentScript.parentNode) {
+                currentScript.parentNode.removeChild(currentScript);
+                currentScript = null;
+            }
+        };
+        const hideSuggest = () => {
+            searchSuggest.classList.remove('show');
+            searchSuggest.innerHTML = '';
+            removeCurrentScript();
+            clearSuggestTimer();
+        };
+        const createSuggestItem = (item, query, type) => {
+            const div = document.createElement('div');
+            div.className = 'suggest-item';
+            div.dataset.value = item;
+
+            const icon = document.createElement('i');
+            icon.className = type === 'history' ? 'fas fa-history' : 'fas fa-search';
+
+            const text = document.createElement('span');
+            text.innerHTML = query ? highlightFuzzy(query, item) : escapeHtml(item);
+
+            div.appendChild(icon);
+            div.appendChild(text);
+            return div;
+        };
+        const renderSuggestList = (suggestions = [], localMatches = []) => {
+            searchSuggest.innerHTML = '';
+            const hasLocal = localMatches && localMatches.length > 0;
+            const hasRemote = suggestions && suggestions.length > 0;
+            if (!hasLocal && !hasRemote) {
+                hideSuggest();
+                return;
+            }
+
+            const query = searchInput.value.trim();
+            const added = new Set();
+
+            if (hasLocal) {
+                const title = document.createElement('div');
+                title.className = 'suggest-group-title';
+                title.textContent = '搜索历史';
+                searchSuggest.appendChild(title);
+                localMatches.slice(0, 5).forEach(item => {
+                    added.add(item);
+                    const div = createSuggestItem(item, query, 'history');
+                    searchSuggest.appendChild(div);
+                });
+            }
+
+            if (hasRemote) {
+                const title = document.createElement('div');
+                title.className = 'suggest-group-title';
+                title.textContent = '搜索建议';
+                searchSuggest.appendChild(title);
+                suggestions.forEach(item => {
+                    if (!added.has(item)) {
+                        const div = createSuggestItem(item, query, 'search');
+                        searchSuggest.appendChild(div);
+                    }
+                });
+            }
+
+            searchSuggest.classList.add('show');
+        };
+        const fetchSuggest = (query, localMatches = []) => {
+            if (!query.trim()) {
+                hideSuggest();
+                return;
+            }
+            const api = suggestApi[currentEngine];
+            if (!api) {
+                hideSuggest();
+                return;
+            }
+            removeCurrentScript();
+            const callbackName = `suggestCallback_${Date.now()}`;
+            const params = { ...api.params };
+            params[Object.keys(api.params)[0]] = encodeURIComponent(query);
+            params[api.callback] = callbackName;
+            const queryString = Object.entries(params)
+                .map(([k, v]) => `${k}=${v}`)
+                .join('&');
+            const url = `${api.url}?${queryString}`;
+            window[callbackName] = (data) => {
+                try {
+                    const suggestions = api.parse(data);
+                    renderSuggestList(suggestions, localMatches);
+                } catch (e) {
+                    hideSuggest();
+                } finally {
+                    delete window[callbackName];
+                    removeCurrentScript();
+                }
+            };
+            currentScript = document.createElement('script');
+            currentScript.src = url;
+            document.head.appendChild(currentScript);
+        };
+        const handleSuggestInput = () => {
+            clearSuggestTimer();
+            const query = searchInput.value.trim();
+            if (!query) {
+                hideSuggest();
+                return;
+            }
+            const history = safeJSONParse(localStorage.getItem(RECORD_KEY), []);
+            const localMatches = history.filter(item => fuzzyMatch(query, item));
+            renderSuggestList([], localMatches);
+            suggestTimer = setTimeout(() => {
+                fetchSuggest(query, localMatches);
+            }, SUGGEST_DELAY);
+        };
+        const handleSuggestClick = (e) => {
+            const item = e.target.closest('.suggest-item');
+            if (item && item.dataset.value) {
+                const val = item.dataset.value;
+                searchInput.value = val;
+                doSearch(val);
+                hideSuggest();
+            }
+        };
+        // ==================== 搜索与跳转安全 ====================
+        const doSearch = (content) => {
+            if (!content.trim()) return;
+            saveSearchRecord(content);
+            const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
+            const isUrl = urlPattern.test(content);
+            if (isUrl) {
+                let targetUrl = content;
+                if (!targetUrl.startsWith('http')) {
+                    targetUrl = 'https://' + targetUrl;
+                }
+                window.open(targetUrl, '_blank', 'noopener,noreferrer');
+            } else {
+                const searchUrl = engineMap[currentEngine] + encodeURIComponent(content);
+                window.open(searchUrl, '_blank', 'noopener,noreferrer');
+            }
+        };
+        // ==================== 模糊搜索工具函数 ====================
+        const fuzzyMatch = (query, text) => {
+            if (!query || !text) return false;
+            const q = query.toLowerCase();
+            const t = text.toLowerCase();
+            let qi = 0, ti = 0;
+            while (qi < q.length && ti < t.length) {
+                if (q[qi] === t[ti]) qi++;
+                ti++;
+            }
+            return qi === q.length;
+        };
+        const highlightFuzzy = (query, text) => {
+            if (!query || !text) return escapeHtml(text);
+            const q = query.toLowerCase();
+            const t = text.toLowerCase();
+            const matched = new Set();
+            let qi = 0, ti = 0;
+            while (qi < q.length && ti < t.length) {
+                if (q[qi] === t[ti]) {
+                    matched.add(ti);
+                    qi++;
+                }
+                ti++;
+            }
+            let html = '';
+            for (let i = 0; i < text.length; i++) {
+                const ch = escapeHtml(text[i]);
+                html += matched.has(i) ? `<strong style="color:#165DFF;font-weight:600;">${ch}</strong>` : ch;
+            }
+            return html;
+        };
+        // ==================== 工具函数 ====================
+        const closeAllPopups = () => {
+            [menuPopup, searchRecord, enginePanel, searchSuggest].forEach(i => i?.classList.remove('show'));
+            settingsModalMask?.classList.remove('show');
+            body.classList.remove('settings-open');
+            const settingIcon = settingBtn?.querySelector('i');
+            if (settingIcon) settingIcon.style.transform = '';
+        };
+        const toggleMenuPopup = () => {
+            const isShow = menuPopup.classList.contains('show');
+            closeAllPopups();
+            if (!isShow) menuPopup.classList.add('show');
+        };
+        const openSettingsModal = () => {
+            closeAllPopups();
+            body.classList.add('settings-open');
+            settingsModalMask?.classList.add('show');
+        };
+        const closeSettingsModal = () => {
+            body.classList.remove('settings-open');
+            settingsModalMask?.classList.remove('show');
+        };
+        const toggleTimeSub = () => {
+            timeSub?.classList.toggle('show');
+        };
+        const toggleSwitch = (switchEl) => {
+            switchEl.classList.toggle('checked');
+            return switchEl.classList.contains('checked');
+        };
+        const setSwitch = (switchEl, checked) => {
+            switchEl.classList.toggle('checked', checked);
+        };
+        // ==================== 自定义标题与背景 ====================
+        const CUSTOM_TITLE_KEY = 'customTitleText';
+        const CUSTOM_BG_KEY = 'customBgUrl';
+        const customTitleMask = el('customTitleMask');
+        const customTitleInput = el('customTitleInput');
+        const customTitleCancel = el('customTitleCancel');
+        const customTitleConfirm = el('customTitleConfirm');
+        const customBgMask = el('customBgMask');
+        const customBgInput = el('customBgInput');
+        const customBgCancel = el('customBgCancel');
+        const customBgConfirm = el('customBgConfirm');
+        const customBgModeTabs = el('customBgModeTabs');
+        const customBgUrlGroup = el('customBgUrlGroup');
+        const customBgFileGroup = el('customBgFileGroup');
+        const customBgFileInput = el('customBgFileInput');
+        const customBgFileName = el('customBgFileName');
+        const bgOverlay = el('bgOverlay');
+        let customBgMode = 'url';
+        let customBgFileData = '';
+        let customBgProcessing = false;
+        const setCustomBgProcessing = (processing) => {
+            customBgProcessing = processing;
+            customBgConfirm.disabled = processing;
+            customBgConfirm.style.opacity = processing ? '0.6' : '';
+            customBgConfirm.style.cursor = processing ? 'not-allowed' : '';
+        };
+        const applyCustomTitle = () => {
+            const text = localStorage.getItem(CUSTOM_TITLE_KEY) || '';
+            if (text.trim()) {
+                exploreTitle.innerHTML = `<span class="custom-title-text">${escapeHtml(text.trim())}</span>`;
+            } else {
+                exploreTitle.innerHTML = '<img src="https://s41.ax1x.com/2026/05/28/pmFCZy8.png" alt="Stariver">';
+            }
+        };
+        const applyCustomBg = () => {
+            const url = localStorage.getItem(CUSTOM_BG_KEY) || '';
+            if (url.trim()) {
+                bgOverlay.style.backgroundImage = `url(${escapeHtml(url.trim())})`;
+                bgOverlay.classList.add('show');
+                body.classList.add('has-custom-bg');
+            } else {
+                bgOverlay.style.backgroundImage = '';
+                bgOverlay.classList.remove('show');
+                body.classList.remove('has-custom-bg');
+            }
+        };
+        const openCustomTitleModal = () => {
+            customTitleInput.value = localStorage.getItem(CUSTOM_TITLE_KEY) || '';
+            customTitleMask.classList.add('show');
+            customTitleInput.focus();
+            closeAllPopups();
+        };
+        const closeCustomTitleModal = () => {
+            customTitleMask.classList.remove('show');
+        };
+        const saveCustomTitle = () => {
+            const text = customTitleInput.value.trim();
+            if (text.length > 10) {
+                alert('标题最多 10 个字符');
+                return;
+            }
+            if (text) {
+                localStorage.setItem(CUSTOM_TITLE_KEY, text);
+            } else {
+                localStorage.removeItem(CUSTOM_TITLE_KEY);
+            }
+            applyCustomTitle();
+            closeCustomTitleModal();
+        };
+        const setCustomBgMode = (mode) => {
+            customBgMode = mode;
+            customBgModeTabs.querySelectorAll('.bg-mode-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.mode === mode);
+            });
+            customBgUrlGroup.classList.toggle('hidden', mode !== 'url');
+            customBgFileGroup.classList.toggle('hidden', mode !== 'file');
+        };
+        const readLocalImage = (file) => {
+            return new Promise((resolve, reject) => {
+                if (!file || !file.type.startsWith('image/')) {
+                    reject(new Error('请选择图片文件'));
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = () => reject(new Error('读取文件失败'));
+                reader.readAsDataURL(file);
+            });
+        };
+        const compressImage = (file, maxWidth = 1920, quality = 0.85) => {
+            return new Promise((resolve, reject) => {
+                if (!file || !file.type.startsWith('image/')) {
+                    reject(new Error('请选择图片文件'));
+                    return;
+                }
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                img.onload = () => {
+                    URL.revokeObjectURL(url);
+                    let { width, height } = img;
+                    if (width > maxWidth) {
+                        height = Math.round(height * maxWidth / width);
+                        width = maxWidth;
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, width, height);
+                    ctx.drawImage(img, 0, 0, width, height);
+                    // 统一输出 JPEG，确保 PNG 等大体积格式也能有效压缩
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    reject(new Error('图片加载失败'));
+                };
+                img.src = url;
+            });
+        };
+        const openCustomBgModal = () => {
+            const saved = localStorage.getItem(CUSTOM_BG_KEY) || '';
+            customBgFileData = saved.startsWith('data:') ? saved : '';
+            customBgFileInput.value = '';
+            customBgFileName.textContent = customBgFileData ? '已选择本地图片' : '未选择文件';
+            setCustomBgMode(saved.startsWith('data:') ? 'file' : 'url');
+            customBgInput.value = saved.startsWith('data:') ? '' : saved;
+            customBgMask.classList.add('show');
+            closeAllPopups();
+        };
+        const closeCustomBgModal = () => {
+            customBgMask.classList.remove('show');
+        };
+        const isQuotaError = (err) => {
+            if (!err) return false;
+            if (err.name === 'QuotaExceededError' || err.code === 22 || err.code === 1014) return true;
+            const msg = String(err.message || err).toLowerCase();
+            return msg.includes('quota') || msg.includes('exceeded') || msg.includes('exceed');
+        };
+        const saveCustomBg = async () => {
+            try {
+                if (customBgMode === 'file') {
+                    let data = customBgFileData;
+                    if (data) {
+                        try {
+                            localStorage.setItem(CUSTOM_BG_KEY, data);
+                        } catch (err) {
+                            if (isQuotaError(err)) {
+                                // 超出容量时尝试更激进压缩
+                                const file = customBgFileInput.files[0];
+                                if (file) {
+                                    setCustomBgProcessing(true);
+                                    try {
+                                        customBgFileName.textContent = '正在压缩...';
+                                        data = await compressImage(file, 1280, 0.7);
+                                        customBgFileData = data;
+                                        localStorage.setItem(CUSTOM_BG_KEY, data);
+                                        customBgFileName.textContent = file.name;
+                                    } finally {
+                                        setCustomBgProcessing(false);
+                                    }
+                                } else {
+                                    throw err;
+                                }
+                            } else {
+                                throw err;
+                            }
+                        }
+                    } else {
+                        localStorage.removeItem(CUSTOM_BG_KEY);
+                    }
+                } else {
+                    const url = customBgInput.value.trim();
+                    if (url) {
+                        localStorage.setItem(CUSTOM_BG_KEY, url);
+                    } else {
+                        localStorage.removeItem(CUSTOM_BG_KEY);
+                    }
+                }
+                applyCustomBg();
+                closeCustomBgModal();
+            } catch (err) {
+                console.error('保存背景失败:', err);
+                const msg = isQuotaError(err)
+                    ? '图片太大，无法保存。请尝试更小的图片或图片链接。'
+                    : (err && err.message ? err.message : '保存失败');
+                alert('保存失败：' + msg);
+            }
+        };
+        // ==================== 设置持久化 ====================
+        const loadTheme = () => {
+            const saved = localStorage.getItem('themeMode');
+            const isDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            setSwitch(themeSwitch, isDark);
+            body.classList.remove('light', 'dark');
+            body.classList.add(isDark ? 'dark' : 'light');
+        };
+        const saveTheme = () => {
+            const isDark = themeSwitch.classList.contains('checked');
+            localStorage.setItem('themeMode', isDark ? 'dark' : 'light');
+            body.classList.remove('light', 'dark');
+            body.classList.add(isDark ? 'dark' : 'light');
+        };
+        const loadTitleSetting = () => {
+            const isShow = localStorage.getItem('isShowTitle') !== 'false';
+            setSwitch(titleSwitch, isShow);
+            exploreTitle.classList.toggle('hidden', !isShow);
+        };
+        const revealElement = (el) => {
+            el.style.animation = 'none';
+            void el.offsetHeight;
+            el.style.animation = '';
+        };
+        const saveTitleSetting = () => {
+            const isShow = titleSwitch.classList.contains('checked');
+            localStorage.setItem('isShowTitle', isShow);
+            exploreTitle.classList.toggle('hidden', !isShow);
+            if (isShow) revealElement(exploreTitle);
+        };
+        const loadTimeSetting = () => {
+            const isShow = localStorage.getItem('isShowTime') === 'true';
+            setSwitch(timeSwitch, isShow);
+            timeDisplay.classList.toggle('hidden', !isShow);
+            timeDisplay.classList.toggle('show', isShow);
+            if (isShow) startTimer();
+            else stopTimer();
+        };
+        const saveTimeSetting = () => {
+            const isShow = timeSwitch.classList.contains('checked');
+            localStorage.setItem('isShowTime', isShow);
+            timeDisplay.classList.toggle('hidden', !isShow);
+            timeDisplay.classList.toggle('show', isShow);
+            if (isShow) {
+                revealElement(timeDisplay);
+                startTimer();
+            } else {
+                stopTimer();
+            }
+        };
+        const loadTimeFormat = () => {
+            timeConfig.is12 = localStorage.getItem('is12Hour') === 'true';
+            timeConfig.isShowS = localStorage.getItem('isShowSecond') === 'true';
+            setSwitch(hour12Switch, timeConfig.is12);
+            setSwitch(secondSwitch, timeConfig.isShowS);
+        };
+        const saveTimeFormat = () => {
+            timeConfig.is12 = hour12Switch.classList.contains('checked');
+            timeConfig.isShowS = secondSwitch.classList.contains('checked');
+            localStorage.setItem('is12Hour', timeConfig.is12);
+            localStorage.setItem('isShowSecond', timeConfig.isShowS);
+            restartTimer();
+        };
+        const loadRecordSetting = () => {
+            const isSave = localStorage.getItem('isSaveRecord') !== 'false';
+            setSwitch(recordSwitch, isSave);
+        };
+        const saveRecordSetting = () => {
+            const isSave = recordSwitch.classList.contains('checked');
+            localStorage.setItem('isSaveRecord', isSave);
+        };
+        const introElements = [menuBtn, exploreTitle, searchBox, shortcutBox].filter(Boolean);
+        const clearIntroAnimations = () => {
+            introElements.forEach(el => el.classList.remove('intro'));
+        };
+        const loadReduceMotion = () => {
+            const isReduced = localStorage.getItem('reduceMotion') === 'true';
+            setSwitch(reduceMotionSwitch, isReduced);
+            if (isReduced) clearIntroAnimations();
+            applyReduceMotion(isReduced);
+        };
+        const saveReduceMotion = () => {
+            const isReduced = reduceMotionSwitch.classList.contains('checked');
+            localStorage.setItem('reduceMotion', isReduced);
+            applyReduceMotion(isReduced);
+        };
+        const applyReduceMotion = (isReduced) => {
+            body.classList.toggle('reduce-motion', isReduced);
+            if (isReduced) {
+                clearIntroAnimations();
+                isAnimating = false;
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+            } else {
+                isAnimating = !document.hidden;
+                if (isAnimating && !animationId) {
+                    drawParticles();
+                }
+            }
+        };
+        // ==================== 设置导入导出 ====================
+        const SETTINGS_KEYS = [
+            'lastSearchEngine',
+            'searchHistoryList',
+            'customShortcutList',
+            'customTitleText',
+            'customBgUrl',
+            'themeMode',
+            'isShowTitle',
+            'isShowTime',
+            'is12Hour',
+            'isShowSecond',
+            'isSaveRecord',
+            'reduceMotion'
+        ];
+        const SETTINGS_EXPORT_VERSION = 1;
+        const collectSettingsData = () => {
+            const data = {
+                _version: SETTINGS_EXPORT_VERSION,
+                _exportedAt: new Date().toISOString()
+            };
+            SETTINGS_KEYS.forEach(key => {
+                const value = localStorage.getItem(key);
+                if (value !== null) {
+                    data[key] = value;
+                }
+            });
+            return data;
+        };
+        const exportSettings = () => {
+            try {
+                const data = collectSettingsData();
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `stariver-settings-${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                alert('导出设置失败：' + err.message);
+            }
+        };
+        const isValidSettingsData = (data) => {
+            if (!data || typeof data !== 'object') return false;
+            if (Array.isArray(data)) return false;
+            const keys = Object.keys(data);
+            if (keys.length === 0) return false;
+            const allowedKeys = new Set([...SETTINGS_KEYS, '_version', '_exportedAt']);
+            return keys.every(key => allowedKeys.has(key));
+        };
+        const applyImportedSettings = (data) => {
+            SETTINGS_KEYS.forEach(key => {
+                localStorage.removeItem(key);
+                if (data.hasOwnProperty(key)) {
+                    localStorage.setItem(key, data[key]);
+                }
+            });
+            currentEngine = localStorage.getItem('lastSearchEngine') || 'bing';
+            if (!engineMap[currentEngine]) {
+                currentEngine = 'bing';
+                localStorage.setItem('lastSearchEngine', currentEngine);
+            }
+            engineToggle.innerHTML = `${engineName[currentEngine]} <span style="font-size:12px;">▼</span>`;
+            loadTheme();
+            loadTitleSetting();
+            loadTimeSetting();
+            loadTimeFormat();
+            loadRecordSetting();
+            loadReduceMotion();
+            applyCustomTitle();
+            applyCustomBg();
+            renderShortcutList();
+            renderRecordList();
+        };
+        const importSettingsFromFile = (file) => {
+            if (!file) return;
+            if (!file.name.toLowerCase().endsWith('.json') && file.type !== 'application/json') {
+                alert('请选择 JSON 文件');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const text = e.target.result;
+                    const data = JSON.parse(text);
+                    if (!isValidSettingsData(data)) {
+                        alert('设置文件格式不正确');
+                        return;
+                    }
+                    if (confirm('导入后将覆盖当前所有设置，是否继续？')) {
+                        applyImportedSettings(data);
+                        alert('设置导入成功');
+                    }
+                } catch (err) {
+                    alert('导入失败：' + (err.message || '文件解析错误'));
+                } finally {
+                    importSettingsFile.value = '';
+                }
+            };
+            reader.onerror = () => {
+                alert('读取文件失败');
+                importSettingsFile.value = '';
+            };
+            reader.readAsText(file);
+        };
+        // ==================== 事件绑定 ====================
+        menuBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleMenuPopup(); });
+        settingBtn.addEventListener('click', (e) => { e.stopPropagation(); openSettingsModal(); });
+        aboutBtn.addEventListener('click', () => {
+            closeAllPopups();
+            aboutMask.classList.add('show');
+        });
+        aboutClose.addEventListener('click', () => aboutMask.classList.remove('show'));
+        aboutMask.addEventListener('click', (e) => {
+            if (e.target === aboutMask) aboutMask.classList.remove('show');
+        });
+        settingsClose.addEventListener('click', (e) => { e.stopPropagation(); closeSettingsModal(); });
+        settingsModalMask.addEventListener('click', (e) => {
+            if (e.target === settingsModalMask) closeSettingsModal();
+        });
+        themeToggle.addEventListener('click', () => {
+            toggleSwitch(themeSwitch);
+            saveTheme();
+        });
+        titleToggle.addEventListener('click', () => {
+            toggleSwitch(titleSwitch);
+            saveTitleSetting();
+        });
+        timeToggle.addEventListener('click', () => {
+            const wasChecked = timeSwitch.classList.contains('checked');
+            toggleSwitch(timeSwitch);
+            saveTimeSetting();
+            if (!wasChecked) {
+                timeSub.classList.add('show');
+            } else {
+                timeSub.classList.remove('show');
+            }
+        });
+        hour12Toggle.addEventListener('click', () => {
+            toggleSwitch(hour12Switch);
+            saveTimeFormat();
+        });
+        secondToggle.addEventListener('click', () => {
+            toggleSwitch(secondSwitch);
+            saveTimeFormat();
+        });
+        recordToggle.addEventListener('click', () => {
+            toggleSwitch(recordSwitch);
+            saveRecordSetting();
+        });
+        reduceMotionToggle.addEventListener('click', () => {
+            toggleSwitch(reduceMotionSwitch);
+            saveReduceMotion();
+        });
+        customTitleToggle.addEventListener('click', openCustomTitleModal);
+        customTitleCancel.addEventListener('click', closeCustomTitleModal);
+        customTitleConfirm.addEventListener('click', saveCustomTitle);
+        customTitleMask.addEventListener('click', (e) => {
+            if (e.target === customTitleMask) closeCustomTitleModal();
+        });
+        customTitleInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') saveCustomTitle();
+        });
+        customBgToggle.addEventListener('click', openCustomBgModal);
+        exportSettingsToggle.addEventListener('click', exportSettings);
+        importSettingsToggle.addEventListener('click', () => importSettingsFile.click());
+        importSettingsFile.addEventListener('change', () => {
+            const file = importSettingsFile.files[0];
+            if (file) importSettingsFromFile(file);
+        });
+        customBgCancel.addEventListener('click', closeCustomBgModal);
+        customBgConfirm.addEventListener('click', saveCustomBg);
+        customBgMask.addEventListener('click', (e) => {
+            if (e.target === customBgMask) closeCustomBgModal();
+        });
+        customBgInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') saveCustomBg();
+        });
+        customBgModeTabs.querySelectorAll('.bg-mode-tab').forEach(tab => {
+            tab.addEventListener('click', () => setCustomBgMode(tab.dataset.mode));
+        });
+        customBgFileInput.addEventListener('change', async () => {
+            const file = customBgFileInput.files[0];
+            if (!file) return;
+            if (file.size > 10 * 1024 * 1024) {
+                alert('图片过大，请选择 10MB 以下的图片');
+                customBgFileInput.value = '';
+                customBgFileData = '';
+                customBgFileName.textContent = '未选择文件';
+                return;
+            }
+            try {
+                setCustomBgProcessing(true);
+                customBgFileName.textContent = '正在处理...';
+                if (file.size > 1024 * 1024) {
+                    customBgFileData = await compressImage(file);
+                } else {
+                    customBgFileData = await readLocalImage(file);
+                }
+                customBgFileName.textContent = file.name;
+            } catch (err) {
+                alert(err.message);
+                customBgFileInput.value = '';
+                customBgFileData = '';
+                customBgFileName.textContent = '未选择文件';
+            } finally {
+                setCustomBgProcessing(false);
+            }
+        });
+        switchHitAreas.forEach(hit => {
+            hit.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const target = el(hit.dataset.target);
+                if (target) {
+                    const toggleEl = target.closest('.settings-item, .sub-item');
+                    if (toggleEl) toggleEl.click();
+                }
+            });
+        });
+        engineToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isShow = enginePanel.classList.contains('show');
+            closeAllPopups();
+            if (!isShow) enginePanel.classList.add('show');
+        });
+        engineItems.forEach(item => {
+            item.addEventListener('click', () => {
+                currentEngine = item.dataset.engine;
+                localStorage.setItem('lastSearchEngine', currentEngine);
+                engineToggle.innerHTML = `${engineName[currentEngine]} <span style="font-size:12px;">▼</span>`;
+                enginePanel.classList.remove('show');
+            });
+        });
+        searchInput.addEventListener('focus', () => {
+            const query = searchInput.value.trim();
+            if (!query) {
+                searchRecord.classList.add('show');
+            }
+        });
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.trim();
+            if (!query) {
+                hideSuggest();
+                searchRecord.classList.add('show');
+                renderRecordList();
+            } else {
+                searchRecord.classList.remove('show');
+                handleSuggestInput();
+            }
+        });
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const val = searchInput.value.trim();
+                if (val) {
+                    doSearch(val);
+                    hideSuggest();
+                    searchRecord.classList.remove('show');
+                }
+            }
+        });
+        searchInput.addEventListener('blur', () => {
+            setTimeout(() => {
+                hideSuggest();
+                searchRecord.classList.remove('show');
+            }, 200);
+        });
+        recordList.addEventListener('click', handleRecordClick);
+        clearAll.addEventListener('click', clearAllRecord);
+        searchSuggest.addEventListener('click', handleSuggestClick);
+        addShortcutBtn.addEventListener('click', openAddShortcutModal);
+        addShortcutCancel.addEventListener('click', closeAddShortcutModal);
+        addShortcutConfirm.addEventListener('click', addShortcut);
+        addShortcutMask.addEventListener('click', (e) => {
+            if (e.target === addShortcutMask) closeAddShortcutModal();
+        });
+        shortcutUrl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') addShortcut();
+        });
+        shortcutBox.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.shortcut-delete');
+            if (deleteBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleShortcutDelete(e);
+                return;
+            }
+        });
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.menu-btn') && !e.target.closest('.menu-popup') &&
+                !e.target.closest('.engine-toggle') && !e.target.closest('.engine-panel') &&
+                !e.target.closest('.search-box') && !e.target.closest('.add-shortcut-mask') &&
+                !e.target.closest('.about-mask') && !e.target.closest('.custom-dialog-box') &&
+                !e.target.closest('.settings-modal')) {
+                closeAllPopups();
+            }
+        });
+        // ==================== 大胆动态效果系统 ====================
+        const particleCanvas = el('particleCanvas');
+        const particleCtx = particleCanvas ? particleCanvas.getContext('2d') : null;
+        let particles = [];
+        let animationId = null;
+        let isAnimating = true;
+        const resizeCanvas = () => {
+            if (!particleCanvas) return;
+            particleCanvas.width = window.innerWidth;
+            particleCanvas.height = window.innerHeight;
+        };
+        const createParticles = () => {
+            particles = [];
+            const count = Math.min(80, Math.floor((window.innerWidth * window.innerHeight) / 18000));
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight,
+                    vx: (Math.random() - 0.5) * 0.4,
+                    vy: (Math.random() - 0.5) * 0.4,
+                    radius: Math.random() * 2 + 0.5,
+                    alpha: Math.random() * 0.5 + 0.1,
+                    pulse: Math.random() * Math.PI * 2
+                });
+            }
+        };
+        const drawParticles = () => {
+            if (!particleCtx || !isAnimating) return;
+            particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            const isDark = body.classList.contains('dark') || (!body.classList.contains('light') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            const color = isDark ? '148, 180, 255' : '22, 93, 255';
+            particles.forEach((p, i) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.pulse += 0.02;
+                if (p.x < 0) p.x = particleCanvas.width;
+                if (p.x > particleCanvas.width) p.x = 0;
+                if (p.y < 0) p.y = particleCanvas.height;
+                if (p.y > particleCanvas.height) p.y = 0;
+                const alpha = p.alpha * (0.7 + 0.3 * Math.sin(p.pulse));
+                particleCtx.beginPath();
+                particleCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                particleCtx.fillStyle = `rgba(${color}, ${alpha})`;
+                particleCtx.fill();
+                // 连线
+                for (let j = i + 1; j < particles.length; j++) {
+                    const q = particles[j];
+                    const dx = p.x - q.x;
+                    const dy = p.y - q.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 100) {
+                        particleCtx.beginPath();
+                        particleCtx.moveTo(p.x, p.y);
+                        particleCtx.lineTo(q.x, q.y);
+                        particleCtx.strokeStyle = `rgba(${color}, ${0.1 * (1 - dist / 100)})`;
+                        particleCtx.lineWidth = 0.5;
+                        particleCtx.stroke();
+                    }
+                }
+            });
+            animationId = requestAnimationFrame(drawParticles);
+        };
+        const startParticles = () => {
+            if (!particleCanvas) return;
+            resizeCanvas();
+            createParticles();
+            if (animationId) cancelAnimationFrame(animationId);
+            drawParticles();
+        };
+        // 3D 倾斜卡片效果
+        const initTiltCards = () => {
+            if (body.classList.contains('reduce-motion')) return;
+            const cards = shortcutBox.querySelectorAll('.shortcut-item');
+            cards.forEach(card => {
+                const wrap = card.closest('.shortcut-wrap');
+                if (!wrap) return;
+                const handleMove = (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = ((y - centerY) / centerY) * -12;
+                    const rotateY = ((x - centerX) / centerX) * 12;
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.08) translateY(-4px)`;
+                };
+                const handleLeave = () => {
+                    card.style.transform = '';
+                };
+                wrap.addEventListener('mousemove', handleMove);
+                wrap.addEventListener('mouseleave', handleLeave);
+            });
+        };
+        // 磁吸按钮效果
+        const initMagneticButtons = () => {
+            const buttons = [menuBtn, engineToggle, addShortcutBtn];
+            buttons.forEach(btn => {
+                if (!btn) return;
+                btn.addEventListener('mousemove', (e) => {
+                    const rect = btn.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
+                    btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px) scale(1.08)`;
+                });
+                btn.addEventListener('mouseleave', () => {
+                    btn.style.transform = '';
+                });
+            });
+        };
+        // 涟漪效果
+        const createRipple = (e, target) => {
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            const rect = target.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = `${size}px`;
+            ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+            ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+            const style = window.getComputedStyle(target);
+            const originalPosition = target.style.position;
+            const originalOverflow = target.style.overflow;
+            if (style.position === 'static') target.style.position = 'relative';
+            target.style.overflow = 'hidden';
+            target.appendChild(ripple);
+            setTimeout(() => {
+                ripple.remove();
+                target.style.position = originalPosition;
+                target.style.overflow = originalOverflow;
+            }, 600);
+        };
+        const initRipple = () => {
+            const targets = '.menu-btn, .menu-main, .sub-item, .engine-toggle, .engine-item, .shortcut-item, .add-shortcut-btn, .add-btn-confirm, .add-btn-cancel, .about-close';
+            document.addEventListener('click', (e) => {
+                const target = e.target.closest(targets);
+                if (target) createRipple(e, target);
+            });
+        };
+        // 鼠标视差背景
+        const initParallax = () => {
+            let rafId = null;
+            let targetX = 0, targetY = 0;
+            let currentX = 0, currentY = 0;
+            document.addEventListener('mousemove', (e) => {
+                targetX = (e.clientX / window.innerWidth - 0.5) * 40;
+                targetY = (e.clientY / window.innerHeight - 0.5) * 40;
+                if (rafId) return;
+                const animate = () => {
+                    currentX += (targetX - currentX) * 0.05;
+                    currentY += (targetY - currentY) * 0.05;
+                    document.querySelectorAll('.gradient-blob').forEach((blob, i) => {
+                        const factor = (i + 1) * 0.3;
+                        blob.style.transform = `translate(${currentX * factor}px, ${currentY * factor}px)`;
+                    });
+                    if (Math.abs(targetX - currentX) > 0.1 || Math.abs(targetY - currentY) > 0.1) {
+                        rafId = requestAnimationFrame(animate);
+                    } else {
+                        rafId = null;
+                    }
+                };
+                rafId = requestAnimationFrame(animate);
+            });
+        };
+        // 可见性控制，节省性能
+        document.addEventListener('visibilitychange', () => {
+            if (body.classList.contains('reduce-motion')) return;
+            isAnimating = !document.hidden;
+            if (isAnimating && !animationId) drawParticles();
+        });
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            createParticles();
+        });
+        // ==================== 初始化 ====================
+        const init = () => {
+            loadTheme();
+            loadTitleSetting();
+            loadTimeSetting();
+            loadTimeFormat();
+            loadRecordSetting();
+            loadReduceMotion();
+            introElements.forEach(el => {
+                el.addEventListener('animationend', () => el.classList.remove('intro'), { once: true });
+            });
+            applyCustomTitle();
+            applyCustomBg();
+            engineToggle.innerHTML = `${engineName[currentEngine]} <span style="font-size:12px;">▼</span>`;
+            renderShortcutList();
+            renderRecordList();
+            const enableMotion = !body.classList.contains('reduce-motion');
+            startParticles();
+            if (enableMotion) {
+                initMagneticButtons();
+                initRipple();
+                initParallax();
+            }
+        };
+        init();
+    </script>
+</body>
+</html>
